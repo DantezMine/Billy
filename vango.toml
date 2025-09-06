@@ -1,0 +1,9 @@
+[build]
+package = "Billy"
+version = "0.1.0"
+lang = "C11"
+runtime = "C++"
+
+[dependencies]
+CSFML   = { path="libs/CSFML" }
+
