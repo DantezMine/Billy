@@ -75,10 +75,16 @@ typedef struct StageMemory {
     Register* regOut;
     DecodeUnit* decodeMemory;
     DecodeUnit* decodeWriteback;
+    DecodeUnit* decodeDecode;
+    Register* regA;
+    Register* regB;
 } StageMemory;
 
 
 typedef struct StageWriteback {
+    RegisterFile* regFileA;
+    RegisterFile* regFileB;
+    RegisterFile* regFileWrite;
     Register* regIn;
     DecodeUnit* decodeWriteback;
 } StageWriteback;
