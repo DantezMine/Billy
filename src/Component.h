@@ -35,6 +35,7 @@ typedef struct DecodeUnit {
 typedef struct StageFetch {
     Memory* memoryInstr;
     Register* PC;
+    bool branchPC;
     DecodeUnit* decodeFetch;
     DecodeUnit* decodeDecode;
     DecodeUnit* decodeExecute;
@@ -59,6 +60,11 @@ typedef struct StageExecute {
     Register* regOut;
     DecodeUnit* decodeExecute;
     DecodeUnit* decodeMemory;
+    Register* flagZero;
+    Register* flagNegative;
+    Register* flagOverflow;
+    Register* PC;
+    bool branchPC;
 } StageExecute;
 
 
