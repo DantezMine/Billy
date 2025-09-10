@@ -25,8 +25,8 @@ typedef struct Memory {
 
 
 typedef struct DecodeUnit {
-    Register* instruction_High;
-    Register* instruction_Low;
+    Register instruction_High;
+    Register instruction_Low;
     bool stall;
     bool branch;
 } DecodeUnit;
@@ -104,5 +104,15 @@ void StageExecute_update(StageExecute* executeStage);
 void StageMemory_update(StageMemory* memoryStage);
 
 void StageWriteback_update(StageWriteback* writebackStage);
+
+void StageFetch_clock(StageFetch* fetchStage);
+
+void StageDecode_clock(StageDecode* decodeStage);
+
+void StageExecute_clock(StageExecute* executeStage);
+
+void StageMemory_clock(StageMemory* memoryStage);
+
+void StageWriteback_clock(StageWriteback* writebackStage);
 
 #endif

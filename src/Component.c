@@ -31,7 +31,7 @@ static bool control[] = {
     /*     */ 0,0,0,0,0,0,0,0,0,0,0,0,
 };
 
-static int controlWidth = 8;
+static int controlWidth = 12;
 
 
 void Register_clock(Register* reg) {
@@ -48,42 +48,38 @@ void StageFetch_update(StageFetch* fetchStage) {
     uint8_t address = fetchStage->PC->data;
     uint8_t data_Low = fetchStage->memoryInstr->reg[address+1].data;
     uint8_t data_High = fetchStage->memoryInstr->reg[address].data;
-    fetchStage->decodeDecode->instruction_Low->in = data_Low;
-    fetchStage->decodeDecode->instruction_High->in = data_High;
+    fetchStage->decodeDecode->instruction_Low.in = data_Low;
+    fetchStage->decodeDecode->instruction_High.in = data_High;
 
-    uint8_t instrDecodeHigh = fetchStage->decodeDecode->instruction_High->data;
-    uint8_t instrDecodeLow = fetchStage->decodeDecode->instruction_Low->data;
-    uint8_t instrExecuteHigh = fetchStage->decodeExecute->instruction_High->data;
-    uint8_t instrExecuteLow = fetchStage->decodeExecute->instruction_Low->data;
+    uint8_t instrDecodeHigh = fetchStage->decodeDecode->instruction_High.data;
+    uint8_t instrDecodeLow = fetchStage->decodeDecode->instruction_Low.data;
+    uint8_t instrExecuteHigh = fetchStage->decodeExecute->instruction_High.data;
+    uint8_t instrExecuteLow = fetchStage->decodeExecute->instruction_Low.data;
     uint8_t instrDecode = getInstruction(instrDecodeHigh, instrDecodeLow);
     uint8_t instrExecute = getInstruction(instrExecuteHigh, instrExecuteLow);
 
     bool stall = !fetchStage->decodeDecode->stall && !getControlBit(instrDecode,3) && !getControlBit(instrExecute, 3);
 
     // if decode stage stalls or there is an unresolved branch instruction, stall the fetch
-    fetchStage->decodeDecode->instruction_High->write = stall;
-    fetchStage->decodeDecode->instruction_High->write = stall;
+    fetchStage->decodeDecode->instruction_High.write = stall;
+    fetchStage->decodeDecode->instruction_High.write = stall;
     fetchStage->PC->write = stall;
     fetchStage->PC->in = fetchStage->branchPC ? fetchStage->PC->in : fetchStage->PC->data+2;
 
-    fetchStage->decodeDecode->instruction_High->in = fetchStage->decodeFetch->instruction_High->data;
-    fetchStage->decodeDecode->instruction_High->write = stall;
-    fetchStage->decodeDecode->instruction_Low->in = fetchStage->decodeFetch->instruction_Low->data;
-    fetchStage->decodeDecode->instruction_Low->write = stall;
+    fetchStage->decodeDecode->instruction_High.in = fetchStage->decodeFetch->instruction_High.data;
+    fetchStage->decodeDecode->instruction_High.write = stall;
+    fetchStage->decodeDecode->instruction_Low.in = fetchStage->decodeFetch->instruction_Low.data;
+    fetchStage->decodeDecode->instruction_Low.write = stall;
 
-    // TODO: only clock after updating all stages
-    Register_clock(fetchStage->decodeDecode->instruction_Low);
-    Register_clock(fetchStage->decodeDecode->instruction_High);
-    Register_clock(fetchStage->PC);
 }
 
 void StageDecode_update(StageDecode* decodeStage) {
-    uint8_t instrExecuteHigh = decodeStage->decodeExecute->instruction_High->data;
-    uint8_t instrExecuteLow = decodeStage->decodeExecute->instruction_Low->data;
-    uint8_t instrMemHigh = decodeStage->decodeMemory->instruction_High->data;
-    uint8_t instrMemLow = decodeStage->decodeMemory->instruction_Low->data;
-    uint8_t instrDecHigh = decodeStage->decodeDecode->instruction_High->data;
-    uint8_t instrDecLow = decodeStage->decodeDecode->instruction_Low->data;
+    uint8_t instrExecuteHigh = decodeStage->decodeExecute->instruction_High.data;
+    uint8_t instrExecuteLow = decodeStage->decodeExecute->instruction_Low.data;
+    uint8_t instrMemHigh = decodeStage->decodeMemory->instruction_High.data;
+    uint8_t instrMemLow = decodeStage->decodeMemory->instruction_Low.data;
+    uint8_t instrDecHigh = decodeStage->decodeDecode->instruction_High.data;
+    uint8_t instrDecLow = decodeStage->decodeDecode->instruction_Low.data;
 
     uint8_t instrExecute = getInstruction(instrExecuteHigh,instrExecuteLow);
     uint8_t instrMem = getInstruction(instrMemHigh,instrMemLow);
@@ -133,15 +129,15 @@ void StageDecode_update(StageDecode* decodeStage) {
         decodeStage->regB->write = true;
     }
 
-    decodeStage->decodeExecute->instruction_High->in = decodeStage->decodeDecode->instruction_High->data;
-    decodeStage->decodeExecute->instruction_High->write = true;
-    decodeStage->decodeExecute->instruction_Low->in = decodeStage->decodeDecode->instruction_Low->data;
-    decodeStage->decodeExecute->instruction_Low->write = true;
+    decodeStage->decodeExecute->instruction_High.in = decodeStage->decodeDecode->instruction_High.data;
+    decodeStage->decodeExecute->instruction_High.write = true;
+    decodeStage->decodeExecute->instruction_Low.in = decodeStage->decodeDecode->instruction_Low.data;
+    decodeStage->decodeExecute->instruction_Low.write = true;
 }
 
 void StageExecute_update(StageExecute* executeStage) { 
-    uint8_t instrExecuteHigh = executeStage->decodeExecute->instruction_High->data;
-    uint8_t instrExecuteLow = executeStage->decodeExecute->instruction_Low->data;
+    uint8_t instrExecuteHigh = executeStage->decodeExecute->instruction_High.data;
+    uint8_t instrExecuteLow = executeStage->decodeExecute->instruction_Low.data;
     uint8_t instrExecute = getInstruction(instrExecuteHigh, instrExecuteLow);
     uint8_t instrALU = getControlBit(instrExecute,4) + 2*getControlBit(instrExecute,5) + 4*getControlBit(instrExecute,6);
     
@@ -192,19 +188,19 @@ void StageExecute_update(StageExecute* executeStage) {
     executeStage->PC->write = true;
     executeStage->branchPC = condition;    
 
-    executeStage->decodeMemory->instruction_High->in = executeStage->decodeMemory->instruction_High->data;
-    executeStage->decodeMemory->instruction_High->write = true;
-    executeStage->decodeMemory->instruction_Low->in = executeStage->decodeMemory->instruction_Low->data;
-    executeStage->decodeMemory->instruction_Low->write = true;
+    executeStage->decodeMemory->instruction_High.in = executeStage->decodeMemory->instruction_High.data;
+    executeStage->decodeMemory->instruction_High.write = true;
+    executeStage->decodeMemory->instruction_Low.in = executeStage->decodeMemory->instruction_Low.data;
+    executeStage->decodeMemory->instruction_Low.write = true;
 }
 
 void StageMemory_update(StageMemory* memoryStage) {
-    uint8_t instrMemHigh = memoryStage->decodeMemory->instruction_High->data;
-    uint8_t instrMemLow = memoryStage->decodeMemory->instruction_Low->data;
+    uint8_t instrMemHigh = memoryStage->decodeMemory->instruction_High.data;
+    uint8_t instrMemLow = memoryStage->decodeMemory->instruction_Low.data;
     uint8_t instrMem = getInstruction(instrMemHigh, instrMemLow);
 
-    uint8_t instrDecHigh = memoryStage->decodeDecode->instruction_High->data;
-    uint8_t instrDecLow = memoryStage->decodeDecode->instruction_Low->data;
+    uint8_t instrDecHigh = memoryStage->decodeDecode->instruction_High.data;
+    uint8_t instrDecLow = memoryStage->decodeDecode->instruction_Low.data;
 
     uint8_t regSource1 = getSource1Register(instrMemHigh, instrMemLow);
     uint8_t regDest = getDestRegister(instrMemHigh, instrMemLow);
@@ -221,6 +217,7 @@ void StageMemory_update(StageMemory* memoryStage) {
         memoryStage->memoryData->reg[in].in = memoryStage->writeRegister->reg[regSource1].data;
         memoryStage->memoryData->reg[in].write = true;
         Register_clock(&memoryStage->memoryData->reg[in]);
+        memoryStage->memoryData->reg[in].write = false;
     }
     if (decRegSource1 == regDest) {
         memoryStage->regA->in = out;
@@ -234,15 +231,16 @@ void StageMemory_update(StageMemory* memoryStage) {
     memoryStage->regOut->in = out;
     memoryStage->regOut->write = true;
 
-    memoryStage->decodeWriteback->instruction_High->in = memoryStage->decodeWriteback->instruction_High->data;
-    memoryStage->decodeWriteback->instruction_High->write = true;
-    memoryStage->decodeWriteback->instruction_Low->in = memoryStage->decodeWriteback->instruction_Low->data;
-    memoryStage->decodeWriteback->instruction_Low->write = true;
+    memoryStage->decodeWriteback->instruction_High.in = memoryStage->decodeWriteback->instruction_High.data;
+    memoryStage->decodeWriteback->instruction_High.write = true;
+    memoryStage->decodeWriteback->instruction_Low.in = memoryStage->decodeWriteback->instruction_Low.data;
+    memoryStage->decodeWriteback->instruction_Low.write = true;
 }
 
+
 void StageWriteback_update(StageWriteback* writebackStage) {
-    uint8_t instrWriteHigh = writebackStage->decodeWriteback->instruction_High->data; 
-    uint8_t instrWriteLow = writebackStage->decodeWriteback->instruction_Low->data; 
+    uint8_t instrWriteHigh = writebackStage->decodeWriteback->instruction_High.data; 
+    uint8_t instrWriteLow = writebackStage->decodeWriteback->instruction_Low.data; 
 
     uint8_t destReg = getDestRegister(instrWriteHigh, instrWriteLow);
     uint8_t in = writebackStage->regIn->data;
@@ -252,6 +250,46 @@ void StageWriteback_update(StageWriteback* writebackStage) {
     writebackStage->regFileA->reg[destReg].write = true;
     writebackStage->regFileB->reg[destReg].write = true;
     writebackStage->regFileWrite->reg[destReg].write = true;
+    Register_clock(&writebackStage->regFileA->reg[destReg]);
+    Register_clock(&writebackStage->regFileB->reg[destReg]);
+    Register_clock(&writebackStage->regFileWrite->reg[destReg]);
+}
+
+
+void StageFetch_clock(StageFetch* fetchStage) {
+    Register_clock(&fetchStage->decodeDecode->instruction_Low);
+    Register_clock(&fetchStage->decodeDecode->instruction_High);
+    Register_clock(fetchStage->PC);
+}
+
+void StageDecode_clock(StageDecode* decodeStage) {
+    Register_clock(decodeStage->regA);
+    Register_clock(decodeStage->regB);
+    Register_clock(&decodeStage->decodeExecute->instruction_High);
+    Register_clock(&decodeStage->decodeExecute->instruction_Low);
+}
+
+void StageExecute_clock(StageExecute* executeStage) {
+    Register_clock(executeStage->regOut);
+    Register_clock(executeStage->flagZero);
+    Register_clock(executeStage->flagNegative);
+    Register_clock(executeStage->flagOverflow);
+    Register_clock(&executeStage->decodeMemory->instruction_High);
+    Register_clock(&executeStage->decodeMemory->instruction_Low);
+}
+
+void StageMemory_clock(StageMemory* memoryStage) {
+   Register_clock(memoryStage->regOut);
+   Register_clock(&memoryStage->decodeWriteback->instruction_High);
+   Register_clock(&memoryStage->decodeWriteback->instruction_Low);
+}
+
+void StageWriteback_clock(StageWriteback* writebackStage) {
+    uint8_t instrWriteHigh = writebackStage->decodeWriteback->instruction_High.data; 
+    uint8_t instrWriteLow = writebackStage->decodeWriteback->instruction_Low.data; 
+
+    uint8_t destReg = getDestRegister(instrWriteHigh, instrWriteLow);
+
     Register_clock(&writebackStage->regFileA->reg[destReg]);
     Register_clock(&writebackStage->regFileB->reg[destReg]);
     Register_clock(&writebackStage->regFileWrite->reg[destReg]);
