@@ -1,0 +1,8 @@
+[package]
+name = "BillyCore"
+version = "0.1.0"
+lang = "C11"
+kind = "staticlib"
+
+[dependencies]
+
