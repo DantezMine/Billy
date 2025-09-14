@@ -3,6 +3,8 @@
 #include <malloc.h>
 #include <stdio.h>
 
+// #define CPU_DEBUG
+
 static StageFetch fetchStage;
 static StageDecode decodeStage;
 static StageExecute executeStage;
@@ -28,6 +30,17 @@ void CPU_Init() {
     Register* flagNegative = malloc(sizeof(Register));
     Register* flagOverflow = malloc(sizeof(Register));
     Register* regMemWriteback = malloc(sizeof(Register));
+
+    decodeFetch->instruction_High.data = 0;
+    decodeFetch->instruction_Low.data = 0;
+    decodeDecode->instruction_High.data = 0;
+    decodeDecode->instruction_Low.data = 0;
+    decodeExecute->instruction_High.data = 0;
+    decodeExecute->instruction_Low.data = 0;
+    decodeMemory->instruction_High.data = 0;
+    decodeMemory->instruction_Low.data = 0;
+    decodeWriteback->instruction_High.data = 0;
+    decodeWriteback->instruction_Low.data = 0;
 
     PC->data = PC_START;
 
@@ -83,13 +96,21 @@ void CPU_Init() {
 
 
 void CPU_Clock() {
+#ifdef CPU_DEBUG
+    printf("\n=======================================\n");
+    printf("Instruction in Decode is: "BYTE_TO_BIN_PATTERN" "BYTE_TO_BIN_PATTERN"\n",BYTE_TO_BIN(decodeStage.decodeDecode->instruction_High.data),BYTE_TO_BIN(decodeStage.decodeDecode->instruction_High.data));
+    printf("Instruction in Execute is: "BYTE_TO_BIN_PATTERN" "BYTE_TO_BIN_PATTERN"\n",BYTE_TO_BIN(executeStage.decodeExecute->instruction_High.data),BYTE_TO_BIN(executeStage.decodeExecute->instruction_High.data));
+    printf("Instruction in Memory is: "BYTE_TO_BIN_PATTERN" "BYTE_TO_BIN_PATTERN"\n",BYTE_TO_BIN(memoryStage.decodeMemory->instruction_High.data),BYTE_TO_BIN(memoryStage.decodeMemory->instruction_High.data));
+    printf("Instruction in Writeback is: "BYTE_TO_BIN_PATTERN" "BYTE_TO_BIN_PATTERN"\n",BYTE_TO_BIN(writebackStage.decodeWriteback->instruction_High.data),BYTE_TO_BIN(writebackStage.decodeWriteback->instruction_High.data));
+#endif
     StageWriteback_update(&writebackStage);
+    StageWriteback_clock(&writebackStage);
+
     StageMemory_update(&memoryStage);
     StageExecute_update(&executeStage);
     StageDecode_update(&decodeStage);
     StageFetch_update(&fetchStage);
 
-    StageWriteback_clock(&writebackStage);
     StageMemory_clock(&memoryStage);
     StageExecute_clock(&executeStage);
     StageDecode_clock(&decodeStage);
@@ -101,7 +122,6 @@ void CPU_SetInstructionMemory(uint8_t instr[128]) {
     Memory* memory = fetchStage.memoryInstr;
     for (int i=0; i<MEM_SIZE; i++) {
         memory->reg[i].data = instr[i];
-        // printf("Instr at %d is "BYTE_TO_BIN_PATTERN"\n",i, BYTE_TO_BIN(memory->reg[i].data));
     }
 }
 
@@ -136,4 +156,8 @@ StageMemory* CPU_getStageMemory() {
 
 StageWriteback* CPU_getStageWriteback() {
     return &writebackStage;
+}
+
+RegisterFile* CPU_getRegisterFile() {
+    return writebackStage.regFileA;
 }
