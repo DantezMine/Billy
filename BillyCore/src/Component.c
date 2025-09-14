@@ -1,5 +1,7 @@
 #include "Component.h"
 #include <stdint.h>
+#include <stdio.h>
+
 
 static uint8_t getInstruction(uint8_t instrHigh, uint8_t instrLow);
 static uint8_t getDestRegister(uint8_t instrHigh, uint8_t instrLow);
@@ -8,34 +10,105 @@ static uint8_t getSource2Register(uint8_t instrHigh, uint8_t instrLow);
 static uint8_t getImmediateMType(uint8_t instrHigh, uint8_t instrLow);
 static uint8_t getImmediateIType(uint8_t instrHigh, uint8_t instrLow);
 static bool getControlBit(uint8_t instr, uint8_t bitIndex);
+static bool getControlBitDecode(uint8_t instr, uint8_t bitIndex);
+static bool getControlBitExecute(uint8_t instr, uint8_t bitIndex);
+static bool getControlBitMemory(uint8_t instr, uint8_t bitIndex);
+static bool getControlBitWriteback(uint8_t instr, uint8_t bitIndex);
+
 static void updateFlags(StageExecute* executeStage, uint16_t out);
 
-// Control signals
-// M, R, I, J, ALU1, ALU2, ALU3, F, C0, C1, MR, MW
-static bool control[] = {
-    /* NOP */ 0,0,0,0,0,0,0,0,0,0,0,0,
-    /* LDA */ 1,0,0,0,0,0,0,0,0,0,1,0,
-    /* STR */ 1,0,0,0,0,0,0,0,0,0,0,1,
-    /* LDI */ 0,0,1,0,0,0,0,0,0,0,0,0,
-    /* ADD */ 0,1,0,0,0,0,0,1,0,0,0,0,
-    /* SUB */ 0,1,0,0,1,0,0,1,0,0,0,0,
-    /* AND */ 0,1,0,0,0,1,0,1,0,0,0,0,
-    /* OR  */ 0,1,0,0,1,1,0,1,0,0,0,0,
-    /* XOR */ 0,1,0,0,0,0,1,1,0,0,0,0,
-    /* LSL */ 0,1,0,0,1,0,1,1,0,0,0,0,
-    /* LSR */ 0,1,0,0,0,1,1,1,0,0,0,0,
-    /* ASR */ 0,1,0,0,1,1,1,1,0,0,0,0,
-    /* BEQ */ 0,0,0,1,0,0,0,0,1,0,0,0,
-    /* BLT */ 0,0,0,1,0,0,0,0,0,1,0,0,
-    /* JMP */ 0,0,0,1,0,0,0,0,1,1,0,0,
-    /*     */ 0,0,0,0,0,0,0,0,0,0,0,0,
-};
+/*
+ * Control signals
+*/
 
-static int controlWidth = 12;
+// branch, regA, regB, immI, immM
+static bool controlDecode[] = {
+    /* NOP */ 0,0,0,0,0,
+    /* LDA */ 0,1,0,0,1,
+    /* STR */ 0,1,0,0,1,
+    /* LDI */ 0,0,0,1,0,
+    /* ADD */ 0,1,1,0,0,
+    /* SUB */ 0,1,1,0,0,
+    /* AND */ 0,1,1,0,0,
+    /* OR  */ 0,1,1,0,0,
+    /* XOR */ 0,1,1,0,0,
+    /* LSL */ 0,1,1,0,0,
+    /* LSR */ 0,1,1,0,0,
+    /* ASR */ 0,1,1,0,0,
+    /* BEQ */ 1,0,0,1,0,
+    /* BLT */ 1,0,0,1,0,
+    /* JMP */ 1,0,0,1,0,
+    /*     */ 0,0,0,0,0,
+};
+static int controlWidthDecode = 5;
+
+// branch, destI, ALU1, ALU2, ALU3, Flags
+static bool controlExecute[] = {
+    /* NOP */ 0,0,0,0,0,0,0,0,
+    /* LDA */ 0,0,0,0,0,0,0,0,
+    /* STR */ 0,0,0,0,0,0,0,0,
+    /* LDI */ 0,1,0,0,0,0,0,0,
+    /* ADD */ 0,0,0,0,0,1,0,0,
+    /* SUB */ 0,0,1,0,0,1,0,0,
+    /* AND */ 0,0,0,1,0,1,0,0,
+    /* OR  */ 0,0,1,1,0,1,0,0,
+    /* XOR */ 0,0,0,0,1,1,0,0,
+    /* LSL */ 0,0,1,0,1,1,0,0,
+    /* LSR */ 0,0,0,1,1,1,0,0,
+    /* ASR */ 0,0,1,1,1,1,0,0,
+    /* BEQ */ 1,1,0,0,0,0,1,0,
+    /* BLT */ 1,1,0,0,0,0,0,1,
+    /* JMP */ 1,1,0,0,0,0,1,1,
+    /*     */ 0,0,0,0,0,0,0,0,
+};
+static int controlWidthExecute = 6;
+
+// branch, destI, MR, MW
+static bool controlMemory[] = {
+    /* NOP */ 0,0,0,0,
+    /* LDA */ 0,0,1,0,
+    /* STR */ 0,0,0,1,
+    /* LDI */ 0,1,0,0,
+    /* ADD */ 0,0,0,0,
+    /* SUB */ 0,0,0,0,
+    /* AND */ 0,0,0,0,
+    /* OR  */ 0,0,0,0,
+    /* XOR */ 0,0,0,0,
+    /* LSL */ 0,0,0,0,
+    /* LSR */ 0,0,0,0,
+    /* ASR */ 0,0,0,0,
+    /* BEQ */ 1,1,0,0,
+    /* BLT */ 1,1,0,0,
+    /* JMP */ 1,1,0,0,
+    /*     */ 0,0,0,0,
+};
+static int controlWidthMemory = 4;
+
+// branch, write
+static bool controlWriteback[] = {
+    /* NOP */ 0,0,
+    /* LDA */ 0,1,
+    /* STR */ 0,0,
+    /* LDI */ 0,1,
+    /* ADD */ 0,1,
+    /* SUB */ 0,1,
+    /* AND */ 0,1,
+    /* OR  */ 0,1,
+    /* XOR */ 0,1,
+    /* LSL */ 0,1,
+    /* LSR */ 0,1,
+    /* ASR */ 0,1,
+    /* BEQ */ 1,0,
+    /* BLT */ 1,0,
+    /* JMP */ 1,0,
+    /*     */ 0,0,
+};
+static int controlWidthWriteback = 2;
+
 
 
 void Register_clock(Register* reg) {
-    reg->data = reg->in;
+    if (reg->write) reg->data = reg->in;
 }
 
 void RegisterFile_clock(RegisterFile* regFile) {
@@ -48,8 +121,8 @@ void StageFetch_update(StageFetch* fetchStage) {
     uint8_t address = fetchStage->PC->data;
     uint8_t data_Low = fetchStage->memoryInstr->reg[address+1].data;
     uint8_t data_High = fetchStage->memoryInstr->reg[address].data;
-    fetchStage->decodeDecode->instruction_Low.in = data_Low;
     fetchStage->decodeDecode->instruction_High.in = data_High;
+    fetchStage->decodeDecode->instruction_Low.in = data_Low;
 
     uint8_t instrDecodeHigh = fetchStage->decodeDecode->instruction_High.data;
     uint8_t instrDecodeLow = fetchStage->decodeDecode->instruction_Low.data;
@@ -58,19 +131,13 @@ void StageFetch_update(StageFetch* fetchStage) {
     uint8_t instrDecode = getInstruction(instrDecodeHigh, instrDecodeLow);
     uint8_t instrExecute = getInstruction(instrExecuteHigh, instrExecuteLow);
 
-    bool stall = !fetchStage->decodeDecode->stall && !getControlBit(instrDecode,3) && !getControlBit(instrExecute, 3);
+    bool stall = fetchStage->decodeDecode->stall || getControlBitDecode(instrDecode,0) || getControlBitExecute(instrExecute,0);
 
     // if decode stage stalls or there is an unresolved branch instruction, stall the fetch
-    fetchStage->decodeDecode->instruction_High.write = stall;
-    fetchStage->decodeDecode->instruction_High.write = stall;
-    fetchStage->PC->write = stall;
+    fetchStage->decodeDecode->instruction_High.write = !stall;
+    fetchStage->decodeDecode->instruction_Low.write = !stall;
+    fetchStage->PC->write = !stall;
     fetchStage->PC->in = fetchStage->branchPC ? fetchStage->PC->in : fetchStage->PC->data+2;
-
-    fetchStage->decodeDecode->instruction_High.in = fetchStage->decodeFetch->instruction_High.data;
-    fetchStage->decodeDecode->instruction_High.write = stall;
-    fetchStage->decodeDecode->instruction_Low.in = fetchStage->decodeFetch->instruction_Low.data;
-    fetchStage->decodeDecode->instruction_Low.write = stall;
-
 }
 
 void StageDecode_update(StageDecode* decodeStage) {
@@ -86,9 +153,9 @@ void StageDecode_update(StageDecode* decodeStage) {
     uint8_t instrDec = getInstruction(instrDecHigh,instrDecLow);
 
     // I-type has dest register at different position
-    uint8_t destRegExecute = getControlBit(instrExecute, 2) ?
+    uint8_t destRegExecute = getControlBitExecute(instrExecute, 1) ?
         getSource1Register(instrExecuteHigh,instrExecuteLow) : getDestRegister(instrExecuteHigh,instrExecuteLow);
-    uint8_t destRegMemory = getControlBit(instrMem, 2) ?
+    uint8_t destRegMemory = getControlBitMemory(instrMem, 1) ?
         getSource1Register(instrMemHigh, instrMemLow) : getDestRegister(instrMemHigh,instrMemHigh);
     uint8_t sourceReg1 = getSource1Register(instrDecHigh,instrDecLow);
     uint8_t sourceReg2 = getSource2Register(instrDecHigh,instrDecLow);
@@ -98,40 +165,34 @@ void StageDecode_update(StageDecode* decodeStage) {
     bool M1 = destRegMemory == sourceReg1;
     bool M2 = destRegMemory == sourceReg2;
 
-    // write to register A if not I-type and no dependence nor forwarding
-    if (!getControlBit(instrDec, 2) & !E1 & !M1) {
-        decodeStage->regA->in = decodeStage->regFileA->reg[sourceReg1].data;
-        decodeStage->regA->write = true;
-    }
     // flow dependence and no forwarding -> stall
-    if (!getControlBit(instrDec, 2) & E1 & !M1) {
-        decodeStage->regA->write = false;
-        decodeStage->decodeDecode->stall = true;
+    decodeStage->decodeDecode->stall = (E1 & !M1) | (getControlBitDecode(instrDec,2) & E2 & !M2);
+
+    // can always write to A and B registers, even in case of stall, since execution stage never stalls
+    decodeStage->regA->write = true;
+    decodeStage->regB->write = true;
+
+    // write to register A if no dependence nor forwarding
+    if (!E1 & !M1) {
+        decodeStage->regA->in = decodeStage->regFileA->reg[sourceReg1].data;
     }
 
-    // write to register B if R-type and no dependence nor forwarding
-    if (getControlBit(instrDec, 1) & !E2 & !M2) {
+    // Multiplexer:
+    // write to register B if no dependence nor forwarding
+    if (getControlBitDecode(instrDec,2) & !E2 & !M2) {
         decodeStage->regB->in = decodeStage->regFileB->reg[sourceReg2].data;
-        decodeStage->regB->write = true;
-    }
-    // flow dependence and no forwarding -> stall
-    if (getControlBit(instrDec, 1) & E2 & !M2) {
-        decodeStage->regB->write = false;
-        decodeStage->decodeDecode->stall = true;
     }
     // write immediate to register B
-    if (getControlBit(instrDec, 0)) {
+    if (getControlBitDecode(instrDec,4)) {
         decodeStage->regB->in = getImmediateMType(instrDecHigh, instrDecLow);
-        decodeStage->regB->write = true;
     }
-    if (getControlBit(instrDec, 2) || getControlBit(instrDec, 3)) {
+    if (getControlBitDecode(instrDec,3)) {
         decodeStage->regB->in = getImmediateIType(instrDecHigh, instrDecLow);
-        decodeStage->regB->write = true;
     }
 
-    decodeStage->decodeExecute->instruction_High.in = decodeStage->decodeDecode->instruction_High.data;
+    decodeStage->decodeExecute->instruction_High.in = instrDecHigh;
     decodeStage->decodeExecute->instruction_High.write = true;
-    decodeStage->decodeExecute->instruction_Low.in = decodeStage->decodeDecode->instruction_Low.data;
+    decodeStage->decodeExecute->instruction_Low.in = instrDecLow;
     decodeStage->decodeExecute->instruction_Low.write = true;
 }
 
@@ -139,58 +200,57 @@ void StageExecute_update(StageExecute* executeStage) {
     uint8_t instrExecuteHigh = executeStage->decodeExecute->instruction_High.data;
     uint8_t instrExecuteLow = executeStage->decodeExecute->instruction_Low.data;
     uint8_t instrExecute = getInstruction(instrExecuteHigh, instrExecuteLow);
-    uint8_t instrALU = getControlBit(instrExecute,4) + 2*getControlBit(instrExecute,5) + 4*getControlBit(instrExecute,6);
+    uint8_t instrALU = getControlBitExecute(instrExecute,1) + 2*getControlBitExecute(instrExecute,2) + 4*getControlBitExecute(instrExecute,3);
     
     uint16_t out = 0;
     uint16_t MSB = executeStage->regA->data & 128;
     switch (instrALU) {
         case 0: // ADD
             out = executeStage->regA->data + executeStage->regB->data;
-            if (getControlBit(instrALU, 7)) updateFlags(executeStage, out);
+            if (getControlBitExecute(instrALU, 4)) updateFlags(executeStage, out);
             break;
         case 1: // SUB
             out = executeStage->regA->data - executeStage->regB->data;
-            if (getControlBit(instrALU, 7)) updateFlags(executeStage, out);
+            if (getControlBitExecute(instrALU, 4)) updateFlags(executeStage, out);
             break;
         case 2: // AND
             out = executeStage->regA->data & executeStage->regB->data;
-            if (getControlBit(instrALU, 7)) updateFlags(executeStage, out);
+            if (getControlBitExecute(instrALU, 4)) updateFlags(executeStage, out);
             break;
         case 3: // OR
             out = executeStage->regA->data | executeStage->regB->data;
-            if (getControlBit(instrALU, 7)) updateFlags(executeStage, out);
+            if (getControlBitExecute(instrALU, 4)) updateFlags(executeStage, out);
             break;
         case 4: // XOR
             out = executeStage->regA->data ^ executeStage->regB->data;
-            if (getControlBit(instrALU, 7)) updateFlags(executeStage, out);
+            if (getControlBitExecute(instrALU, 4)) updateFlags(executeStage, out);
             break;
         case 5: // LSL
             out = executeStage->regA->data << 1;
-            if (getControlBit(instrALU, 7)) updateFlags(executeStage, out);
+            if (getControlBitExecute(instrALU, 4)) updateFlags(executeStage, out);
             break;
         case 6: // LSR
             out = executeStage->regA->data >> 1;
-            if (getControlBit(instrALU, 7)) updateFlags(executeStage, out);
+            if (getControlBitExecute(instrALU, 4)) updateFlags(executeStage, out);
             break;
         case 7: // ASR
             out = executeStage->regA->data >> 1 | MSB;
-            if (getControlBit(instrALU, 7)) updateFlags(executeStage, out);
+            if (getControlBitExecute(instrALU, 4)) updateFlags(executeStage, out);
             break;
     }
 
     executeStage->regOut->in = out;
     executeStage->regOut->write = true;
 
-    bool C0 = getControlBit(instrALU, 8);
-    bool C1 = getControlBit(instrALU, 9);
+    bool C0 = getControlBitExecute(instrALU, 5);
+    bool C1 = getControlBitExecute(instrALU, 6);
     bool condition = (C0 & !C1 & executeStage->flagZero->data) | (!C0  & C1 & executeStage->flagNegative->data) | (C0 & C1);
     executeStage->PC->in = condition ? out : executeStage->PC->in;
-    executeStage->PC->write = true;
-    executeStage->branchPC = condition;    
+    executeStage->branchPC = condition;
 
-    executeStage->decodeMemory->instruction_High.in = executeStage->decodeMemory->instruction_High.data;
+    executeStage->decodeMemory->instruction_High.in = instrExecuteHigh;
     executeStage->decodeMemory->instruction_High.write = true;
-    executeStage->decodeMemory->instruction_Low.in = executeStage->decodeMemory->instruction_Low.data;
+    executeStage->decodeMemory->instruction_Low.in = instrExecuteLow;
     executeStage->decodeMemory->instruction_Low.write = true;
 }
 
@@ -210,10 +270,10 @@ void StageMemory_update(StageMemory* memoryStage) {
 
     uint8_t in = memoryStage->regIn->data;
     uint8_t out = in;
-    if (getControlBit(instrMem, 10)) {
+    if (getControlBitMemory(instrMem, 2)) {
         out = memoryStage->memoryData->reg[in].data;
     }
-    if (getControlBit(instrMem, 11)) {
+    if (getControlBitMemory(instrMem, 3)) {
         memoryStage->memoryData->reg[in].in = memoryStage->writeRegister->reg[regSource1].data;
         memoryStage->memoryData->reg[in].write = true;
         Register_clock(&memoryStage->memoryData->reg[in]);
@@ -231,9 +291,9 @@ void StageMemory_update(StageMemory* memoryStage) {
     memoryStage->regOut->in = out;
     memoryStage->regOut->write = true;
 
-    memoryStage->decodeWriteback->instruction_High.in = memoryStage->decodeWriteback->instruction_High.data;
+    memoryStage->decodeWriteback->instruction_High.in = instrMemHigh;
     memoryStage->decodeWriteback->instruction_High.write = true;
-    memoryStage->decodeWriteback->instruction_Low.in = memoryStage->decodeWriteback->instruction_Low.data;
+    memoryStage->decodeWriteback->instruction_Low.in = instrMemLow;
     memoryStage->decodeWriteback->instruction_Low.write = true;
 }
 
@@ -244,15 +304,15 @@ void StageWriteback_update(StageWriteback* writebackStage) {
 
     uint8_t destReg = getDestRegister(instrWriteHigh, instrWriteLow);
     uint8_t in = writebackStage->regIn->data;
+
+    bool write = getControlBitWriteback(getInstruction(instrWriteHigh,instrWriteLow),1);
+
     writebackStage->regFileA->reg[destReg].in = in;
     writebackStage->regFileB->reg[destReg].in = in;
     writebackStage->regFileWrite->reg[destReg].in = in;
-    writebackStage->regFileA->reg[destReg].write = true;
-    writebackStage->regFileB->reg[destReg].write = true;
-    writebackStage->regFileWrite->reg[destReg].write = true;
-    Register_clock(&writebackStage->regFileA->reg[destReg]);
-    Register_clock(&writebackStage->regFileB->reg[destReg]);
-    Register_clock(&writebackStage->regFileWrite->reg[destReg]);
+    writebackStage->regFileA->reg[destReg].write = write;
+    writebackStage->regFileB->reg[destReg].write = write;
+    writebackStage->regFileWrite->reg[destReg].write = write;
 }
 
 
@@ -325,8 +385,22 @@ static uint8_t getImmediateIType(uint8_t instrHigh, uint8_t instrLow) {
     return (instrLow & 0b11111111);
 }
 
-static bool getControlBit(uint8_t instr, uint8_t bitIndex) {
-    return control[instr*controlWidth+bitIndex];
+static bool getControlBitDecode(uint8_t instr, uint8_t bitIndex) {
+    return controlDecode[bitIndex + controlWidthDecode*instr];
+}
+
+static bool getControlBitExecute(uint8_t instr, uint8_t bitIndex) {
+    return controlExecute[bitIndex + controlWidthExecute*instr];
+}
+
+
+static bool getControlBitMemory(uint8_t instr, uint8_t bitIndex) {
+    return controlMemory[bitIndex + controlWidthMemory*instr];
+}
+
+
+static bool getControlBitWriteback(uint8_t instr, uint8_t bitIndex) {
+    return controlWriteback[bitIndex + controlWidthWriteback*instr];
 }
 
 static void updateFlags(StageExecute* executeStage, uint16_t out) {

@@ -1,6 +1,7 @@
 #include "CPU.h"
 #include "Component.h"
 #include <malloc.h>
+#include <stdio.h>
 
 static StageFetch fetchStage;
 static StageDecode decodeStage;
@@ -28,6 +29,8 @@ void CPU_Init() {
     Register* flagOverflow = malloc(sizeof(Register));
     Register* regMemWriteback = malloc(sizeof(Register));
 
+    PC->data = PC_START;
+
     fetchStage = (StageFetch) {
         .memoryInstr = memoryInstr,
         .PC = PC,
@@ -42,7 +45,7 @@ void CPU_Init() {
         .regFileWrite = regFileWrite,
         .regA = regA,
         .regB = regB,
-        .decodeDecode = decodeFetch,
+        .decodeDecode = decodeDecode,
         .decodeExecute = decodeExecute,
         .decodeMemory = decodeMemory,
     };
@@ -91,4 +94,46 @@ void CPU_Clock() {
     StageExecute_clock(&executeStage);
     StageDecode_clock(&decodeStage);
     StageFetch_clock(&fetchStage);
+}
+
+
+void CPU_SetInstructionMemory(uint8_t instr[128]) {
+    Memory* memory = fetchStage.memoryInstr;
+    for (int i=0; i<MEM_SIZE; i++) {
+        memory->reg[i].data = instr[i];
+        // printf("Instr at %d is "BYTE_TO_BIN_PATTERN"\n",i, BYTE_TO_BIN(memory->reg[i].data));
+    }
+}
+
+
+void CPU_SetDataMemory(uint8_t data[128]) {
+    Memory* memory = memoryStage.memoryData;
+    for (int i=0; i<MEM_SIZE; i++) {
+        memory->reg[i].data = data[i];
+    }
+}
+
+
+StageFetch* CPU_getStageFetch() {
+    return &fetchStage;
+}
+
+
+StageDecode* CPU_getStageDecode() {
+    return &decodeStage;
+}
+
+
+StageExecute* CPU_getStageExecute() {
+    return &executeStage;
+}
+
+
+StageMemory* CPU_getStageMemory() {
+    return &memoryStage;
+}
+
+
+StageWriteback* CPU_getStageWriteback() {
+    return &writebackStage;
 }
