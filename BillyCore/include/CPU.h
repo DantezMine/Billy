@@ -24,4 +24,6 @@ StageMemory* CPU_getStageMemory();
 StageWriteback* CPU_getStageWriteback();
 
 RegisterFile* CPU_getRegisterFile();
+
+Register* CPU_getPC();
 #endif

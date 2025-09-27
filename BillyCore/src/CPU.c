@@ -43,11 +43,12 @@ void CPU_Init() {
     decodeWriteback->instruction_Low.data = 0;
 
     PC->data = PC_START;
+    bool* branchPC = malloc(sizeof(bool));
 
     fetchStage = (StageFetch) {
         .memoryInstr = memoryInstr,
         .PC = PC,
-        .branchPC = false,
+        .branchPC = branchPC,
         .decodeFetch = decodeFetch,
         .decodeDecode = decodeDecode,
         .decodeExecute = decodeExecute,
@@ -72,7 +73,7 @@ void CPU_Init() {
         .flagNegative = flagNegative,
         .flagOverflow = flagOverflow,
         .PC = PC,
-        .branchPC = false,
+        .branchPC = branchPC,
     };
     memoryStage = (StageMemory) {
         .memoryData = memoryData,
@@ -160,4 +161,9 @@ StageWriteback* CPU_getStageWriteback() {
 
 RegisterFile* CPU_getRegisterFile() {
     return writebackStage.regFileA;
+}
+
+
+Register* CPU_getPC() {
+    return fetchStage.PC;
 }
