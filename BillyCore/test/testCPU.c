@@ -1,6 +1,7 @@
 #include "Component.h"
 #include "CPU.h"
 #include <stdint.h>
+#include <stdlib.h>
 #define VANGO_TEST_ROOT
 #include <vangotest/casserts.h>
 
