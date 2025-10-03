@@ -5,7 +5,6 @@
 
 // #define CPU_DEBUG
 
-
 static uint8_t getInstruction(uint8_t instrHigh, uint8_t instrLow);
 static uint8_t getDestRegister(uint8_t instrHigh, uint8_t instrLow);
 static uint8_t getSource1Register(uint8_t instrHigh, uint8_t instrLow);
@@ -16,7 +15,6 @@ static bool getControlBitDecode(uint8_t instr, uint8_t bitIndex);
 static bool getControlBitExecute(uint8_t instr, uint8_t bitIndex);
 static bool getControlBitMemory(uint8_t instr, uint8_t bitIndex);
 static bool getControlBitWriteback(uint8_t instr, uint8_t bitIndex);
-
 static void updateFlags(StageExecute* executeStage, uint16_t out);
 
 /*
@@ -108,6 +106,27 @@ static bool controlWriteback[] = {
 static int controlWidthWriteback = 3;
 
 
+/*
+ * Global Functions
+*/
+
+char* INSTR_STRINGS[] = {
+    "NOP",
+    "LDA",
+    "STR",
+    "LDI",
+    "ADD",
+    "SUB",
+    "AND",
+    "OR",
+    "XOR",
+    "LSL",
+    "LSR",
+    "ASR",
+    "BEQ",
+    "BLT",
+    "JMP",
+};
 
 void Register_clock(Register* reg) {
     if (reg->write) reg->data = reg->in;

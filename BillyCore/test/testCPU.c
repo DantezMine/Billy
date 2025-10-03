@@ -21,98 +21,98 @@
 
 vango_test(Instruction_LDA) {
     uint16_t instr = 0b0001010011011010;
-    uint16_t instr_auto = Instr_M("LDA", 2, 3, 26);
+    uint16_t instr_auto = Instr_M("LDA", 2, 3, 26).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_STR) {
     uint16_t instr = 0b0010010011011010;
-    uint16_t instr_auto = Instr_M("STR", 2, 3, 26);
+    uint16_t instr_auto = Instr_M("STR", 2, 3, 26).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_LDI) {
     uint16_t instr = 0b0011011000001111;
-    uint16_t instr_auto = Instr_I("LDI", 3, 15);
+    uint16_t instr_auto = Instr_I("LDI", 3, 15).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_ADD) {
     uint16_t instr = 0b0100010101011000;
-    uint16_t instr_auto = Instr_R("ADD", 2, 5, 3);
+    uint16_t instr_auto = Instr_R("ADD", 2, 5, 3).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_SUB) {
     uint16_t instr = 0b0101010101011000;
-    uint16_t instr_auto = Instr_R("SUB", 2, 5, 3);
+    uint16_t instr_auto = Instr_R("SUB", 2, 5, 3).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_AND) {
     uint16_t instr = 0b0110010101011000;
-    uint16_t instr_auto = Instr_R("AND", 2, 5, 3);
+    uint16_t instr_auto = Instr_R("AND", 2, 5, 3).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_OR) {
     uint16_t instr = 0b0111010101011000;
-    uint16_t instr_auto = Instr_R("OR", 2, 5, 3);
+    uint16_t instr_auto = Instr_R("OR", 2, 5, 3).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_XOR) {
     uint16_t instr = 0b1000010101011000;
-    uint16_t instr_auto = Instr_R("XOR", 2, 5, 3);
+    uint16_t instr_auto = Instr_R("XOR", 2, 5, 3).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_LSL) {
     uint16_t instr = 0b1001010101011000;
-    uint16_t instr_auto = Instr_R("LSL", 2, 5, 3);
+    uint16_t instr_auto = Instr_R("LSL", 2, 5, 3).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_LSR) {
     uint16_t instr = 0b1010010101011000;
-    uint16_t instr_auto = Instr_R("LSR", 2, 5, 3);
+    uint16_t instr_auto = Instr_R("LSR", 2, 5, 3).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_ASR) {
     uint16_t instr = 0b1011010101011000;
-    uint16_t instr_auto = Instr_R("ASR", 2, 5, 3);
+    uint16_t instr_auto = Instr_R("ASR", 2, 5, 3).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_BEQ) {
     uint16_t instr = 0b1100100000010001;
-    uint16_t instr_auto = Instr_I("BEQ", 4, 17);
+    uint16_t instr_auto = Instr_I("BEQ", 4, 17).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_BLT) {
     uint16_t instr = 0b1101100000010001;
-    uint16_t instr_auto = Instr_I("BLT", 4, 17);
+    uint16_t instr_auto = Instr_I("BLT", 4, 17).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_JMP) {
     uint16_t instr = 0b1110100000010001;
-    uint16_t instr_auto = Instr_I("JMP", 4, 17);
+    uint16_t instr_auto = Instr_I("JMP", 4, 17).instr;
     printf("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
@@ -121,14 +121,13 @@ vango_test(Instruction_JMP) {
 vango_test(instruction_forwarding) {
     CPU_Init();
     
-    uint8_t* instr = malloc(sizeof(uint8_t)*MEM_SIZE);
-    memset(instr,0, sizeof(uint8_t)*MEM_SIZE);
-    instr[0] = 0b00110010; // LDI $r1, 26
-    instr[1] = 0b00011010;
-    instr[2] = 0b00110100; // LDI $r2, 14
-    instr[3] = 0b00001110;
-    instr[4] = 0b01000100; // ADD $r2, $r2, $r1
-    instr[5] = 0b10001000;
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 26).high;
+    instr[1] = Instr_I("LDI", 1, 26).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("ADD", 2, 2, 1).high;
+    instr[5] = Instr_R("ADD", 2, 2, 1).low;
     CPU_SetInstructionMemory(instr);
 
     free(instr);
@@ -174,14 +173,13 @@ vango_test(instruction_forwarding) {
 vango_test(load_imm) {
     CPU_Init();
     
-    uint8_t* instr = malloc(sizeof(uint8_t)*MEM_SIZE);
-    memset(instr,0, sizeof(uint8_t)*MEM_SIZE);
-    instr[0] = 0b00110010; // LDI $r1, 26
-    instr[1] = 0b00011010;
-    instr[2] = 0b00110100; // LDI $r2, 14
-    instr[3] = 0b00001110;
-    instr[4] = 0b01000100; // ADD $r2, $r2, $r1
-    instr[5] = 0b10001000;
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 26).high;
+    instr[1] = Instr_I("LDI", 1, 26).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("ADD", 2, 2, 1).high;
+    instr[5] = Instr_R("ADD", 2, 2, 1).low;
     CPU_SetInstructionMemory(instr);
 
     free(instr);
@@ -215,16 +213,16 @@ vango_test(basic_add) {
     CPU_Init();
     
     uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
-    instr[0] = 0b00110010; // LDI $r1, 26
-    instr[1] = 0b00011010;
-    instr[2] = 0b00110100; // LDI $r2, 14
-    instr[3] = 0b00001110;
-    instr[4] = 0b01000100; // ADD $r2, $r2, $r1
-    instr[5] = 0b10001000;
+    instr[0] = Instr_I("LDI", 1, 26).high;
+    instr[1] = Instr_I("LDI", 1, 26).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("ADD", 2, 2, 1).high;
+    instr[5] = Instr_R("ADD", 2, 2, 1).low;
     CPU_SetInstructionMemory(instr);
     free(instr);
 
-    for (int i=0; i<7; i++) {
+    for (int i=0; i<8; i++) {
         CPU_Clock();
     }
 
@@ -236,16 +234,15 @@ vango_test(basic_add) {
 vango_test(uncond_jump) {
     CPU_Init();
     
-    uint8_t* instr = malloc(sizeof(uint8_t)*MEM_SIZE);
-    memset(instr,0, sizeof(uint8_t)*MEM_SIZE);
-    instr[0] = 0b00110010; // LDI $r1, 26
-    instr[1] = 0b00011010;
-    instr[2] = 0b00110100; // LDI $r2, 14
-    instr[3] = 0b00001110;
-    instr[4] = 0b11100000; // JMP 8($r0)
-    instr[5] = 0b00001000;
-    instr[6] = 0b01000100; // ADD $r2, $r2, $r1
-    instr[7] = 0b10001000;
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 26).high;
+    instr[1] = Instr_I("LDI", 1, 26).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_I("JMP", 0, 8).high;
+    instr[5] = Instr_I("JMP", 0, 8).low;
+    instr[6] = Instr_R("ADD", 2, 2, 1).high;
+    instr[6] = Instr_R("ADD", 2, 2, 1).low;
     CPU_SetInstructionMemory(instr);
 
     free(instr);
@@ -266,20 +263,19 @@ vango_test(uncond_jump) {
 vango_test(beq_jump) {
     CPU_Init();
     
-    uint8_t* instr = malloc(sizeof(uint8_t)*MEM_SIZE);
-    memset(instr,0, sizeof(uint8_t)*MEM_SIZE);
-    instr[0] = 0b00110010; // LDI $r1, 14
-    instr[1] = 0b00001110;
-    instr[2] = 0b00110100; // LDI $r2, 14
-    instr[3] = 0b00001110;
-    instr[4] = 0b01010100; // SUB $r2, $r2, $r1
-    instr[5] = 0b10001000;
-    instr[6] = 0b11000000; // BEQ 12($r0)
-    instr[7] = 0b00001100;
-    instr[8] = 0b00110100; // LDI $r2, 26
-    instr[9] = 0b00011010;
-    instr[10] = 0b01000100; // ADD $r2, $r2, $r1
-    instr[11] = 0b10001000;
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 14).high;
+    instr[1] = Instr_I("LDI", 1, 14).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("SUB", 2, 2, 1).high;
+    instr[5] = Instr_R("SUB", 2, 2, 1).low;
+    instr[6] = Instr_I("BEQ", 0, 12).high;
+    instr[7] = Instr_I("BEQ", 0, 12).low;
+    instr[8] = Instr_I("LDI", 2, 26).high;
+    instr[9] = Instr_I("LDI", 2, 26).low;
+    instr[10] = Instr_R("ADD", 2, 2, 1).high;
+    instr[11] = Instr_R("ADD", 2, 2, 1).low;
     CPU_SetInstructionMemory(instr);
 
     free(instr);
@@ -300,20 +296,19 @@ vango_test(beq_jump) {
 vango_test(beq_notjump) {
     CPU_Init();
     
-    uint8_t* instr = malloc(sizeof(uint8_t)*MEM_SIZE);
-    memset(instr,0, sizeof(uint8_t)*MEM_SIZE);
-    instr[0] = 0b00110010; // LDI $r1, 10
-    instr[1] = 0b00001010;
-    instr[2] = 0b00110100; // LDI $r2, 14
-    instr[3] = 0b00001110;
-    instr[4] = 0b01010100; // SUB $r2, $r2, $r1
-    instr[5] = 0b10001000;
-    instr[6] = 0b11000000; // BEQ 12($r0)
-    instr[7] = 0b00001100;
-    instr[8] = 0b00110100; // LDI $r2, 26
-    instr[9] = 0b00011010;
-    instr[10] = 0b01000100; // ADD $r2, $r2, $r1
-    instr[11] = 0b10001000;
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 10).high;
+    instr[1] = Instr_I("LDI", 1, 10).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("SUB", 2, 2, 1).high;
+    instr[5] = Instr_R("SUB", 2, 2, 1).low;
+    instr[6] = Instr_I("BEQ", 0, 12).high;
+    instr[7] = Instr_I("BEQ", 0, 12).low;
+    instr[8] = Instr_I("LDI", 2, 26).high;
+    instr[9] = Instr_I("LDI", 2, 26).low;
+    instr[10] = Instr_R("ADD", 2, 2, 1).high;
+    instr[11] = Instr_R("ADD", 2, 2, 1).low;
     CPU_SetInstructionMemory(instr);
 
     free(instr);
@@ -334,20 +329,19 @@ vango_test(beq_notjump) {
 vango_test(blt_jump) {
     CPU_Init();
     
-    uint8_t* instr = malloc(sizeof(uint8_t)*MEM_SIZE);
-    memset(instr,0, sizeof(uint8_t)*MEM_SIZE);
-    instr[0] = 0b00110010; // LDI $r1, 15
-    instr[1] = 0b00001111;
-    instr[2] = 0b00110100; // LDI $r2, 14
-    instr[3] = 0b00001110;
-    instr[4] = 0b01010100; // SUB $r2, $r2, $r1
-    instr[5] = 0b10001000;
-    instr[6] = 0b11010000; // BLT 12($r0)
-    instr[7] = 0b00001100;
-    instr[8] = 0b00110100; // LDI $r2, 26
-    instr[9] = 0b00011010;
-    instr[10] = 0b01000100; // ADD $r2, $r2, $r1
-    instr[11] = 0b10001000;
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 15).high;
+    instr[1] = Instr_I("LDI", 1, 15).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("SUB", 2, 2, 1).high;
+    instr[5] = Instr_R("SUB", 2, 2, 1).low;
+    instr[6] = Instr_I("BLT", 0, 12).high;
+    instr[7] = Instr_I("BLT", 0, 12).low;
+    instr[8] = Instr_I("LDI", 2, 26).high;
+    instr[9] = Instr_I("LDI", 2, 26).low;
+    instr[10] = Instr_R("ADD", 2, 2, 1).high;
+    instr[11] = Instr_R("ADD", 2, 2, 1).low;
     CPU_SetInstructionMemory(instr);
 
     free(instr);
@@ -368,20 +362,19 @@ vango_test(blt_jump) {
 vango_test(blt_notjump) {
     CPU_Init();
     
-    uint8_t* instr = malloc(sizeof(uint8_t)*MEM_SIZE);
-    memset(instr,0, sizeof(uint8_t)*MEM_SIZE);
-    instr[0] = 0b00110010; // LDI $r1, 14
-    instr[1] = 0b00001110;
-    instr[2] = 0b00110100; // LDI $r2, 14
-    instr[3] = 0b00001110;
-    instr[4] = 0b01010100; // SUB $r2, $r2, $r1
-    instr[5] = 0b10001000;
-    instr[6] = 0b11010000; // BLT 12($r0)
-    instr[7] = 0b00001100;
-    instr[8] = 0b00110100; // LDI $r2, 26
-    instr[9] = 0b00011010;
-    instr[10] = 0b01000100; // ADD $r2, $r2, $r1
-    instr[11] = 0b10001000;
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 14).high;
+    instr[1] = Instr_I("LDI", 1, 14).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("SUB", 2, 2, 1).high;
+    instr[5] = Instr_R("SUB", 2, 2, 1).low;
+    instr[6] = Instr_I("BLT", 0, 12).high;
+    instr[7] = Instr_I("BLT", 0, 12).low;
+    instr[8] = Instr_I("LDI", 2, 26).high;
+    instr[9] = Instr_I("LDI", 2, 26).low;
+    instr[10] = Instr_R("ADD", 2, 2, 1).high;
+    instr[11] = Instr_R("ADD", 2, 2, 1).low;
     CPU_SetInstructionMemory(instr);
 
     free(instr);
@@ -415,6 +408,7 @@ vango_test_main(
         vango_test_reg(Instruction_JMP);
         vango_test_reg(instruction_forwarding);
         vango_test_reg(load_imm);
+        vango_test_reg(basic_add);
         vango_test_reg(uncond_jump);
         vango_test_reg(beq_jump);
         vango_test_reg(beq_notjump);

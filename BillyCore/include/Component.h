@@ -19,25 +19,6 @@
 
 #define MEM_SIZE 128
 
-
-static char* INSTR_STRINGS[] = {
-    "NOP",
-    "LDA",
-    "STR",
-    "LDI",
-    "ADD",
-    "SUB",
-    "AND",
-    "OR",
-    "XOR",
-    "LSL",
-    "LSR",
-    "ASR",
-    "BEQ",
-    "BLT",
-    "JMP",
-};
-
 typedef struct Register {
     uint8_t data;
     uint8_t in;

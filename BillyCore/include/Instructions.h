@@ -6,19 +6,28 @@
 #include <string.h>
 #include <stdio.h>
 
-uint16_t Instr_M(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t immediate) {
+typedef union Instruction {
+    struct {
+        uint8_t low;
+        uint8_t high;
+    };
+    uint16_t instr;
+} Instruction;
+
+Instruction Instr_M(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t immediate) {
     uint8_t opcode = 0;
     if (strcmp(instr,"LDA") == 0)
         opcode = 1;
     else if (strcmp(instr,"STR") == 0)
         opcode = 2;
     else
-        return -1;
-    return (opcode << 12) | ((0x7 & regSrc1) << 9) | ((0x7 & regDest) << 6) | (0x3f & immediate);
+        return (Instruction) { .instr=-1 };
+    uint16_t instruction = (opcode << 12) | ((0x7 & regSrc1) << 9) | ((0x7 & regDest) << 6) | (0x3f & immediate);
+    return (Instruction){ .instr=instruction };
 }
 
 
-uint16_t Instr_R(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t regSrc2) {
+Instruction Instr_R(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t regSrc2) {
     uint8_t opcode;
     if (strcmp(instr,"ADD") == 0)
         opcode = 4;
@@ -37,11 +46,12 @@ uint16_t Instr_R(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t re
     else if (strcmp(instr,"ASR") == 0)
         opcode = 11;
     else
-        return -1;
-    return (opcode << 12) | ((0x7 & regSrc1) << 9) | ((0x7 & regDest) << 6) | ((0x7 & regSrc2) << 3);
+        return (Instruction) { .instr=-1 };
+    uint16_t instruction = (opcode << 12) | ((0x7 & regSrc1) << 9) | ((0x7 & regDest) << 6) | ((0x7 & regSrc2) << 3);
+    return (Instruction) {.instr=instruction };
 }
 
-uint16_t Instr_I(const char* instr, uint8_t regDest, uint8_t immediate) {
+Instruction Instr_I(const char* instr, uint8_t regDest, uint8_t immediate) {
     uint8_t opcode;
     if (strcmp(instr,"LDI") == 0)
         opcode = 3;
@@ -52,8 +62,9 @@ uint16_t Instr_I(const char* instr, uint8_t regDest, uint8_t immediate) {
     else if (strcmp(instr,"JMP") == 0)
         opcode = 14;
     else
-        return -1;
-    return (opcode << 12) | ((0x7 & regDest) << 9) | immediate;
+        return (Instruction) { .instr=-1 };
+    uint16_t instruction = (opcode << 12) | ((0x7 & regDest) << 9) | immediate;
+    return (Instruction) { .instr=instruction };
 }
 
 #endif
