@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Component.h"
 
 #define MAX_TOKEN_SIZE 32
 
@@ -26,6 +27,7 @@ enum Token_Type {
     REG,
     IMM,
     END,
+    INVALID,
 };
 
 typedef struct Token {
@@ -39,4 +41,5 @@ typedef struct Token {
 
 
 ByteCode Translation_translate(char* assm);
+Token* Translation_tokenize(char* line);
 #endif

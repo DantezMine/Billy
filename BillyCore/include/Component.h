@@ -19,6 +19,48 @@
 
 #define MEM_SIZE 128
 
+const char* instr_table[] = {
+    "NOP",
+    "LDA",
+    "STR",
+    "LDI",
+    "ADD",
+    "SUB",
+    "AND",
+    "OR",
+    "XOR",
+    "LSL",
+    "LSR",
+    "ASR",
+    "BEQ",
+    "BLT",
+    "JMP",
+};
+
+typedef enum INSTR_TYPE {
+    M_TYPE,
+    R_TYPE,
+    I_TYPE,
+    NOP,
+} INSTR_TYPE;
+
+INSTR_TYPE instr_type[] = {
+    NOP,
+    M_TYPE,
+    M_TYPE,
+    I_TYPE,
+    R_TYPE,
+    R_TYPE,
+    R_TYPE,
+    R_TYPE,
+    R_TYPE,
+    R_TYPE,
+    R_TYPE,
+    I_TYPE,
+    I_TYPE,
+    I_TYPE,
+};
+
 typedef struct Register {
     uint8_t data;
     uint8_t in;

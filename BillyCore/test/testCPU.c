@@ -391,6 +391,10 @@ vango_test(blt_notjump) {
     vg_assert_eq(pc, 20);
 }
 
+vango_test(translate_tokenize_LDA) {
+    vg_assert(1);
+};
+
 vango_test_main(
         vango_test_reg(Instruction_LDA);
         vango_test_reg(Instruction_STR);
