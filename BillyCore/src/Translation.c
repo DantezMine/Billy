@@ -6,6 +6,7 @@
 static uint16_t tokens_to_instr(Token* tokens);
 static Label* get_label(char* name);
 static Token arg_to_token(const char* arg);
+static uint16_t swap_endian(uint16_t in);
 
 
 static Label* labels;
@@ -30,7 +31,7 @@ ByteCode Translation_translate(char* str_assembly) {
     char* line = malloc(512*sizeof(char));
 
     while (1) {
-        sscanf(str_assembly+offset,"%511[\n]",line);
+        if (sscanf(str_assembly+offset,"%511[^\n]",line) == -1) break;
         if (*line == EOF || *line == '\0') break;
         offset += strlen(line)+1;
 
@@ -46,13 +47,16 @@ ByteCode Translation_translate(char* str_assembly) {
                 tokens_size = floor(tokens_size*1.5);
                 realloc(tokens, tokens_size);
             }
-            tokens[tokens_index++] = line_tokens[i++];
+            tokens[tokens_index+i] = line_tokens[i];
+            i++;
         }
-        tokens[tokens_index++] = line_tokens[i++];
+        tokens[tokens_index+i] = line_tokens[i];
+        i++;
         free(line_tokens);
 
         // count instructions and set label definitions
         Token* first_token = &tokens[tokens_index];
+        tokens_index += i;
         switch(first_token->type) {
             case INSTR:
                 num_instr++;
@@ -67,7 +71,7 @@ ByteCode Translation_translate(char* str_assembly) {
                     printf("Multiple definitions of label %s\n",first_token->name);
                     return (ByteCode){-1,NULL};
                 }
-                labels[labels_indx++] = (Label){.value=num_instr+1};
+                labels[labels_indx++] = (Label){.value=2*num_instr};
                 strcpy(labels[labels_indx-1].name,first_token->name);
                 break;
             default:
@@ -80,6 +84,7 @@ ByteCode Translation_translate(char* str_assembly) {
     free(line);
     ByteCode bc_out = (ByteCode){num_instr, malloc(num_instr * sizeof(uint16_t))};
 
+
     // Iterate through instructions and convert to bytecode
     Token* current_token = tokens;
     for (int i=0; i<num_instr; i++) {
@@ -89,10 +94,10 @@ ByteCode Translation_translate(char* str_assembly) {
             continue;
         }
         // convert to bytecode
-        bc_out.instr[i] = tokens_to_instr(current_token);
+        bc_out.instr[i] = swap_endian(tokens_to_instr(current_token));
         // move current_token to next line
         int tokens_in_instr = 0; //includes the END token
-        while(current_token[i+tokens_in_instr++].type != END);
+        while(current_token[tokens_in_instr++].type != END);
         current_token += tokens_in_instr;
     }
 
@@ -117,7 +122,7 @@ Token* Translation_tokenize(char* line) {
         free(tokens);
         return NULL;
     }
-    else if (sscanf(line," %*1[.]%s%*[:]",label) == 1) {
+    else if (sscanf(line," %*1[.]%[^:]",label) == 1) {
         tokens[0] = (Token){.type=LABEL};
         strcpy(tokens[0].name,label);
     } else if ((n = sscanf(line," %32s %16[^,] , %16[^,] , %16[^,]",instr,arg1,arg2,arg3))) {
@@ -218,7 +223,7 @@ static uint16_t tokens_to_instr(Token* tokens) {
             out |= (op & 0xf)<<12;
             if (tokens[1].type == REG) {
                 out |= (tokens[1].reg & 0x7)<<9;
-                if (tokens[2].type != IMM) {
+                if (tokens[2].type == IMM) {
                     out |= tokens[2].immediate & 0xff;
                 } else {
                     Label* label = get_label(tokens[2].name);
@@ -230,7 +235,7 @@ static uint16_t tokens_to_instr(Token* tokens) {
                 }
             } else {
                 out |= (0 & 0x7)<<9;
-                if (tokens[1].type != IMM) {
+                if (tokens[1].type == IMM) {
                     out |= tokens[1].immediate & 0xff;
                 } else {
                     Label* label = get_label(tokens[1].name);
@@ -293,4 +298,12 @@ int Translation_token_cmpeq(Token* token, Token* other) {
         || (token->type==REG && other->type==REG  && token->reg==other->reg)
         || (token->type==IMM && other->type==IMM  && token->immediate==other->immediate)
         || (token->type==other->type);
+}
+
+static uint16_t swap_endian(uint16_t in) {
+    // printf("Before: 0x%x\n",in);
+    uint8_t low = in;
+    uint8_t high = (in>>8);
+    // printf("After: 0x%x\n",(low<<8) | high);
+    return (low<<8) | high;
 }

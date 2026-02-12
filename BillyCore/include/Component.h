@@ -44,6 +44,7 @@ static const char* instr_table[] = {
     "BEQ",
     "BLT",
     "JMP",
+    "NOP",
 };
 
 static INSTR_TYPE instr_type[] = {
@@ -58,9 +59,11 @@ static INSTR_TYPE instr_type[] = {
     R_TYPE,
     R_TYPE,
     R_TYPE,
+    R_TYPE,
     I_TYPE,
     I_TYPE,
     I_TYPE,
+    NOP,
 };
 
 typedef struct Register {

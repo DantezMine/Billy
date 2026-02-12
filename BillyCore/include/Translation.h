@@ -11,7 +11,7 @@
 #define MAX_TOKEN_SIZE 32
 
 typedef struct ByteCode {
-    size_t num_instr;
+    int num_instr;
     uint16_t* instr;
 } ByteCode;
 

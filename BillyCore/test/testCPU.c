@@ -485,6 +485,77 @@ vango_test(translate_tokenize_BLT) {
     }
 };
 
+vango_test(translate_medium_test) {
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 14).high;
+    instr[1] = Instr_I("LDI", 1, 14).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("SUB", 2, 2, 1).high;
+    instr[5] = Instr_R("SUB", 2, 2, 1).low;
+    instr[6] = Instr_I("BEQ", 0, 12).high;
+    instr[7] = Instr_I("BEQ", 0, 12).low;
+    instr[8] = Instr_I("LDI", 2, 26).high;
+    instr[9] = Instr_I("LDI", 2, 26).low;
+    instr[10] = Instr_R("ADD", 2, 2, 1).high;
+    instr[11] = Instr_R("ADD", 2, 2, 1).low;
+
+    char* assembly = 
+        "   LDI %r1, 14\n"
+        "   LDI %r2, 14\n"
+        "   SUB %r2, %r2, %r1\n"
+        "   BEQ 12\n"
+        "   LDI %r2, 26\n"
+        "   ADD %r2, %r2, %r1\n"
+        "";
+    ByteCode bc = Translation_translate(assembly);
+
+    vg_assert_eq(bc.num_instr,6);
+    for (int i=0; i < bc.num_instr; i++) {
+        PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected: 0x%x\n",i,bc.instr[i],i, ((uint16_t*)instr)[i]);
+        vg_assert_eq(bc.instr[i], ((uint16_t*)instr)[i]);
+    }
+
+    free(bc.instr);
+    free(instr);
+};
+
+vango_test(translate_medium_label) {
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 14).high;
+    instr[1] = Instr_I("LDI", 1, 14).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("SUB", 2, 2, 1).high;
+    instr[5] = Instr_R("SUB", 2, 2, 1).low;
+    instr[6] = Instr_I("BEQ", 0, 12).high;
+    instr[7] = Instr_I("BEQ", 0, 12).low;
+    instr[8] = Instr_I("LDI", 2, 26).high;
+    instr[9] = Instr_I("LDI", 2, 26).low;
+    instr[10] = Instr_R("ADD", 2, 2, 1).high;
+    instr[11] = Instr_R("ADD", 2, 2, 1).low;
+
+    char* assembly = 
+        "   LDI %r1, 14\n"
+        "   LDI %r2, 14\n"
+        "   SUB %r2, %r2, %r1\n"
+        "   BEQ END\n"
+        "   LDI %r2, 26\n"
+        "   ADD %r2, %r2, %r1\n"
+        ".END:\n"
+        "";
+    ByteCode bc = Translation_translate(assembly);
+
+    vg_assert_eq(bc.num_instr,6);
+    for (int i=0; i < bc.num_instr; i++) {
+        PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected: 0x%x\n",i,bc.instr[i],i, ((uint16_t*)instr)[i]);
+        vg_assert_eq(bc.instr[i], ((uint16_t*)instr)[i]);
+    }
+
+    free(bc.instr);
+    free(instr);
+};
+
 vango_test_main(
         vango_test_reg(Instruction_LDA);
         vango_test_reg(Instruction_STR);
@@ -513,4 +584,6 @@ vango_test_main(
         vango_test_reg(translate_tokenize_ADD);
         vango_test_reg(translate_tokenize_BEQ);
         vango_test_reg(translate_tokenize_BLT);
+        vango_test_reg(translate_medium_test);
+        vango_test_reg(translate_medium_label);
 )
