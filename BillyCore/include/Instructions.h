@@ -14,7 +14,7 @@ typedef union Instruction {
     uint16_t instr;
 } Instruction;
 
-Instruction Instr_M(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t immediate) {
+Instruction Instr_M(const char* instr, uint8_t regDest, uint8_t regSrc1, uint8_t immediate) {
     uint8_t opcode = 0;
     if (strcmp(instr,"LDA") == 0)
         opcode = 1;
@@ -22,12 +22,12 @@ Instruction Instr_M(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t
         opcode = 2;
     else
         return (Instruction) { .instr=-1 };
-    uint16_t instruction = (opcode << 12) | ((0x7 & regSrc1) << 9) | ((0x7 & regDest) << 6) | (0x3f & immediate);
+    uint16_t instruction = (opcode << 12) | ((0x7 & regDest) << 9) | ((0x7 & regSrc1) << 6) | (0x3f & immediate);
     return (Instruction){ .instr=instruction };
 }
 
 
-Instruction Instr_R(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t regSrc2) {
+Instruction Instr_R(const char* instr, uint8_t regDest, uint8_t regSrc1, uint8_t regSrc2) {
     uint8_t opcode;
     if (strcmp(instr,"ADD") == 0)
         opcode = 4;
@@ -47,7 +47,7 @@ Instruction Instr_R(const char* instr, uint8_t regSrc1, uint8_t regDest, uint8_t
         opcode = 11;
     else
         return (Instruction) { .instr=-1 };
-    uint16_t instruction = (opcode << 12) | ((0x7 & regSrc1) << 9) | ((0x7 & regDest) << 6) | ((0x7 & regSrc2) << 3);
+    uint16_t instruction = (opcode << 12) | ((0x7 & regDest) << 9) | ((0x7 & regSrc1) << 6) | ((0x7 & regSrc2) << 3);
     return (Instruction) {.instr=instruction };
 }
 

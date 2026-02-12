@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "Instructions.h"
+#include "Translation.h"
 
 #define VANGO_TEST_ROOT
 #include <vangotest/casserts.h>
@@ -19,101 +20,109 @@
   ((byte) & 0x02 ? '1' : '0'), \
   ((byte) & 0x01 ? '1' : '0') 
 
+// #define PRINT_ASSERTS
+
+#ifdef PRINT_ASSERTS
+#define PRINT(...) (printf(__VA_ARGS__))
+#else
+#define PRINT(...)
+#endif
+
 vango_test(Instruction_LDA) {
     uint16_t instr = 0b0001010011011010;
     uint16_t instr_auto = Instr_M("LDA", 2, 3, 26).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_STR) {
     uint16_t instr = 0b0010010011011010;
     uint16_t instr_auto = Instr_M("STR", 2, 3, 26).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_LDI) {
     uint16_t instr = 0b0011011000001111;
     uint16_t instr_auto = Instr_I("LDI", 3, 15).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_ADD) {
     uint16_t instr = 0b0100010101011000;
     uint16_t instr_auto = Instr_R("ADD", 2, 5, 3).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_SUB) {
     uint16_t instr = 0b0101010101011000;
     uint16_t instr_auto = Instr_R("SUB", 2, 5, 3).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_AND) {
     uint16_t instr = 0b0110010101011000;
     uint16_t instr_auto = Instr_R("AND", 2, 5, 3).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_OR) {
     uint16_t instr = 0b0111010101011000;
     uint16_t instr_auto = Instr_R("OR", 2, 5, 3).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_XOR) {
     uint16_t instr = 0b1000010101011000;
     uint16_t instr_auto = Instr_R("XOR", 2, 5, 3).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_LSL) {
     uint16_t instr = 0b1001010101011000;
     uint16_t instr_auto = Instr_R("LSL", 2, 5, 3).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_LSR) {
     uint16_t instr = 0b1010010101011000;
     uint16_t instr_auto = Instr_R("LSR", 2, 5, 3).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_ASR) {
     uint16_t instr = 0b1011010101011000;
     uint16_t instr_auto = Instr_R("ASR", 2, 5, 3).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_BEQ) {
     uint16_t instr = 0b1100100000010001;
     uint16_t instr_auto = Instr_I("BEQ", 4, 17).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_BLT) {
     uint16_t instr = 0b1101100000010001;
     uint16_t instr_auto = Instr_I("BLT", 4, 17).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
 vango_test(Instruction_JMP) {
     uint16_t instr = 0b1110100000010001;
     uint16_t instr_auto = Instr_I("JMP", 4, 17).instr;
-    printf("Expected: %x, Actual: %x\n",instr, instr_auto);
+    PRINT("Expected: %x, Actual: %x\n",instr, instr_auto);
     vg_assert_eq(instr, instr_auto);
 }
 
@@ -143,18 +152,18 @@ vango_test(instruction_forwarding) {
     // After 4 clocks: writeback stage holds LDI $r2, 26
     instrHigh = CPU_getStageWriteback()->decodeWriteback->instruction_High.data;
     instrLow = CPU_getStageWriteback()->decodeWriteback->instruction_Low.data;
-    printf("Assert -- Value: %d, Expected: %d\n",instrHigh,0b00110010);
+    PRINT("Assert -- Value: %d, Expected: %d\n",instrHigh,0b00110010);
     vg_assert_eq(instrHigh,0b00110010);
-    printf("Assert -- Value: %d, Expected: %d\n",instrLow, 0b00011010);
+    PRINT("Assert -- Value: %d, Expected: %d\n",instrLow, 0b00011010);
     vg_assert_eq(instrLow, 0b00011010);
 
     CPU_Clock();
     // After 5 clocks: writeback stage holds LDI $r1, 14
     instrHigh = CPU_getStageWriteback()->decodeWriteback->instruction_High.data;
     instrLow = CPU_getStageWriteback()->decodeWriteback->instruction_Low.data;
-    printf("Assert -- Value: %d, Expected: %d\n",instrHigh, 0b00110100);
+    PRINT("Assert -- Value: %d, Expected: %d\n",instrHigh, 0b00110100);
     vg_assert_eq(instrHigh, 0b00110100);
-    printf("Assert -- Value: %d, Expected: %d\n",instrLow, 0b00001110);
+    PRINT("Assert -- Value: %d, Expected: %d\n",instrLow, 0b00001110);
     vg_assert_eq(instrLow, 0b00001110);
 
     CPU_Clock();
@@ -162,9 +171,9 @@ vango_test(instruction_forwarding) {
     // After 6 clocks: writeback stage holds ADD $r2, $r2, $r1
     instrHigh = CPU_getStageWriteback()->decodeWriteback->instruction_High.data;
     instrLow = CPU_getStageWriteback()->decodeWriteback->instruction_Low.data;
-    printf("Assert -- Value: %d, Expected: %d\n",instrHigh, 0b01000100);
+    PRINT("Assert -- Value: %d, Expected: %d\n",instrHigh, 0b01000100);
     vg_assert_eq(instrHigh, 0b01000100);
-    printf("Assert -- Value: %d, Expected: %d\n",instrLow, 0b10001000);
+    PRINT("Assert -- Value: %d, Expected: %d\n",instrLow, 0b10001000);
     vg_assert_eq(instrLow, 0b10001000);
 
 }
@@ -191,21 +200,21 @@ vango_test(load_imm) {
     CPU_Clock(); // After 5 clocks: writeback stage holds LDI $r2, 26
 
     uint8_t reg1 = CPU_getRegisterFile()->reg[1].data;
-    // printf("Register 1 is: %d; Expected: %d\n",reg1, 26);
-    printf("Assert -- Value: %d, Expected: %d\n",reg1,26);
+    // PRINT("Register 1 is: %d; Expected: %d\n",reg1, 26);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg1,26);
     vg_assert_eq(reg1, 26);
 
     CPU_Clock();
 
     uint8_t reg2 = CPU_getRegisterFile()->reg[2].data;
-    // printf("Register 2 is: %d; Expected: %d\n",reg2, 14);
-    printf("Assert -- Value: %d, Expected: %d\n",reg2,14);
+    // PRINT("Register 2 is: %d; Expected: %d\n",reg2, 14);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg2,14);
     vg_assert_eq(reg2, 14);
 
     CPU_Clock();
     CPU_Clock();
     reg2 = CPU_getRegisterFile()->reg[2].data;
-    printf("Assert -- Value: %d, Expected: %d\n",reg2,40);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg2,40);
     vg_assert_eq(reg2, 40);
 }
 
@@ -227,7 +236,7 @@ vango_test(basic_add) {
     }
 
     uint8_t reg2 = CPU_getRegisterFile()->reg[2].data;
-    printf("Assert -- Value: %d, Expected: %d\n",reg2,40);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg2,40);
     vg_assert_eq(reg2, 40);
 }
 
@@ -246,16 +255,16 @@ vango_test(uncond_jump) {
     CPU_SetInstructionMemory(instr);
 
     free(instr);
-    // printf("PC: %x\n",CPU_getPC()->data);
+    // PRINT("PC: %x\n",CPU_getPC()->data);
     for (int i=0; i<8; i++) {
         CPU_Clock();
-        // printf("PC: %x\n",CPU_getPC()->data);
+        // PRINT("PC: %x\n",CPU_getPC()->data);
     }
     uint8_t reg2 = CPU_getRegisterFile()->reg[2].data;
-    printf("Assert -- Value: %d, Expected: %d\n",reg2,14);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg2,14);
     vg_assert_eq(reg2, 14);
     uint8_t pc = CPU_getPC()->data;
-    printf("Assert -- Value: %d, Expected: %d\n",pc,0xe);
+    PRINT("Assert -- Value: %d, Expected: %d\n",pc,0xe);
     vg_assert_eq(pc, 0xe);
 }
 
@@ -279,16 +288,16 @@ vango_test(beq_jump) {
     CPU_SetInstructionMemory(instr);
 
     free(instr);
-    // printf("PC: %x\n",CPU_getPC()->data);
+    // PRINT("PC: %x\n",CPU_getPC()->data);
     for (int i=0; i<10; i++) {
         CPU_Clock();
-        // printf("PC: %x\n",CPU_getPC()->data);
+        // PRINT("PC: %x\n",CPU_getPC()->data);
     }
     uint8_t reg2 = CPU_getRegisterFile()->reg[2].data;
-    printf("Assert -- Value: %d, Expected: %d\n",reg2,0);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg2,0);
     vg_assert_eq(reg2, 0);
     uint8_t pc = CPU_getPC()->data;
-    printf("Assert -- Value: %d, Expected: %d\n",pc,18);
+    PRINT("Assert -- Value: %d, Expected: %d\n",pc,18);
     vg_assert_eq(pc, 18);
 }
 
@@ -312,16 +321,16 @@ vango_test(beq_notjump) {
     CPU_SetInstructionMemory(instr);
 
     free(instr);
-    // printf("PC: %x\n",CPU_getPC()->data);
+    // PRINT("PC: %x\n",CPU_getPC()->data);
     for (int i=0; i<14; i++) {
         CPU_Clock();
-        // printf("PC: %x\n",CPU_getPC()->data);
+        // PRINT("PC: %x\n",CPU_getPC()->data);
     }
     uint8_t reg2 = CPU_getRegisterFile()->reg[2].data;
-    printf("Assert -- Value: %d, Expected: %d\n",reg2,36);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg2,36);
     vg_assert_eq(reg2, 36);
     uint8_t pc = CPU_getPC()->data;
-    printf("Assert -- Value: %d, Expected: %d\n",pc,14);
+    PRINT("Assert -- Value: %d, Expected: %d\n",pc,14);
     vg_assert_eq(pc, 20);
 }
 
@@ -345,16 +354,16 @@ vango_test(blt_jump) {
     CPU_SetInstructionMemory(instr);
 
     free(instr);
-    // printf("PC: %x\n",CPU_getPC()->data);
+    // PRINT("PC: %x\n",CPU_getPC()->data);
     for (int i=0; i<10; i++) {
         CPU_Clock();
-        // printf("PC: %x\n",CPU_getPC()->data);
+        // PRINT("PC: %x\n",CPU_getPC()->data);
     }
     uint8_t reg2 = CPU_getRegisterFile()->reg[2].data;
-    printf("Assert -- Value: %d, Expected: %d\n",reg2,255);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg2,255);
     vg_assert_eq(reg2, 255);
     uint8_t pc = CPU_getPC()->data;
-    printf("Assert -- Value: %d, Expected: %d\n",pc,18);
+    PRINT("Assert -- Value: %d, Expected: %d\n",pc,18);
     vg_assert_eq(pc, 18);
 }
 
@@ -378,21 +387,102 @@ vango_test(blt_notjump) {
     CPU_SetInstructionMemory(instr);
 
     free(instr);
-    // printf("PC: %x\n",CPU_getPC()->data);
+    // PRINT("PC: %x\n",CPU_getPC()->data);
     for (int i=0; i<14; i++) {
         CPU_Clock();
-        // printf("PC: %x\n",CPU_getPC()->data);
+        // PRINT("PC: %x\n",CPU_getPC()->data);
     }
     uint8_t reg2 = CPU_getRegisterFile()->reg[2].data;
-    printf("Assert -- Value: %d, Expected: %d\n",reg2,40);
+    PRINT("Assert -- Value: %d, Expected: %d\n",reg2,40);
     vg_assert_eq(reg2, 40);
     uint8_t pc = CPU_getPC()->data;
-    printf("Assert -- Value: %d, Expected: %d\n",pc,14);
+    PRINT("Assert -- Value: %d, Expected: %d\n",pc,14);
     vg_assert_eq(pc, 20);
 }
 
 vango_test(translate_tokenize_LDA) {
-    vg_assert(1);
+    char* line = "  LDA     %r5, %r1, 0x2f";
+    Token* tokens = Translation_tokenize(line);
+    Token tokens_exp[] = {
+        (Token){.type=INSTR,.name="LDA"},
+        (Token){.type=REG,.reg=5},
+        (Token){.type=REG,.reg=1},
+        (Token){.type=IMM,.immediate=0x2f},
+        (Token){.type=END},
+    };
+    for (int i=0; i<5; i++) {
+        char token_str[50];
+        Translation_token_to_str(&tokens[i],token_str);
+        PRINT("%s\n",token_str);
+        vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
+    }
+};
+
+vango_test(translate_tokenize_LDI) {
+    char* line = "  LDI     %r5, 0x2f";
+    Token* tokens = Translation_tokenize(line);
+    Token tokens_exp[] = {
+        (Token){.type=INSTR,.name="LDI"},
+        (Token){.type=REG,.reg=5},
+        (Token){.type=IMM,.immediate=0x2f},
+        (Token){.type=END},
+    };
+    for (int i=0; i<4; i++) {
+        char token_str[50];
+        Translation_token_to_str(&tokens[i],token_str);
+        PRINT("%s\n",token_str);
+        vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
+    }
+};
+
+vango_test(translate_tokenize_ADD) {
+    char* line = "  ADD     %r5, %r1, %r2";
+    Token* tokens = Translation_tokenize(line);
+    Token tokens_exp[] = {
+        (Token){.type=INSTR,.name="ADD"},
+        (Token){.type=REG,.reg=5},
+        (Token){.type=REG,.reg=1},
+        (Token){.type=REG,.reg=2},
+        (Token){.type=END},
+    };
+    for (int i=0; i<5; i++) {
+        char token_str[50];
+        Translation_token_to_str(&tokens[i],token_str);
+        PRINT("%s\n",token_str);
+        vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
+    }
+};
+
+vango_test(translate_tokenize_BEQ) {
+    char* line = "  BEQ     ABC";
+    Token* tokens = Translation_tokenize(line);
+    Token tokens_exp[] = {
+        (Token){.type=INSTR,.name="BEQ"},
+        (Token){.type=LABEL,.name="ABC"},
+        (Token){.type=END},
+    };
+    for (int i=0; i<3; i++) {
+        char token_str[50];
+        Translation_token_to_str(&tokens[i],token_str);
+        PRINT("%s\n",token_str);
+        vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
+    }
+};
+
+vango_test(translate_tokenize_BLT) {
+    char* line = "  BLT     0xe5";
+    Token* tokens = Translation_tokenize(line);
+    Token tokens_exp[] = {
+        (Token){.type=INSTR,.name="BLT"},
+        (Token){.type=IMM,.immediate=0xe5},
+        (Token){.type=END},
+    };
+    for (int i=0; i<3; i++) {
+        char token_str[50];
+        Translation_token_to_str(&tokens[i],token_str);
+        PRINT("%s\n",token_str);
+        vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
+    }
 };
 
 vango_test_main(
@@ -418,4 +508,9 @@ vango_test_main(
         vango_test_reg(beq_notjump);
         vango_test_reg(blt_jump);
         vango_test_reg(blt_notjump);
+        vango_test_reg(translate_tokenize_LDA);
+        vango_test_reg(translate_tokenize_LDI);
+        vango_test_reg(translate_tokenize_ADD);
+        vango_test_reg(translate_tokenize_BEQ);
+        vango_test_reg(translate_tokenize_BLT);
 )

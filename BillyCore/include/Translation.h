@@ -42,4 +42,6 @@ typedef struct Token {
 
 ByteCode Translation_translate(char* assm);
 Token* Translation_tokenize(char* line);
+void Translation_token_to_str(Token* token, char* out);
+int Translation_token_cmpeq(Token* token, Token* other);
 #endif

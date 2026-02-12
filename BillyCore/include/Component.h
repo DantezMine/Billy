@@ -19,7 +19,16 @@
 
 #define MEM_SIZE 128
 
-const char* instr_table[] = {
+
+typedef enum INSTR_TYPE {
+    M_TYPE,
+    R_TYPE,
+    I_TYPE,
+    NOP,
+} INSTR_TYPE;
+
+
+static const char* instr_table[] = {
     "NOP",
     "LDA",
     "STR",
@@ -37,14 +46,7 @@ const char* instr_table[] = {
     "JMP",
 };
 
-typedef enum INSTR_TYPE {
-    M_TYPE,
-    R_TYPE,
-    I_TYPE,
-    NOP,
-} INSTR_TYPE;
-
-INSTR_TYPE instr_type[] = {
+static INSTR_TYPE instr_type[] = {
     NOP,
     M_TYPE,
     M_TYPE,

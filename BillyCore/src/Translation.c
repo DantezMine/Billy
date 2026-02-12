@@ -104,6 +104,9 @@ ByteCode Translation_translate(char* str_assembly) {
 
 Token* Translation_tokenize(char* line) {
     Token* tokens = malloc(5*sizeof(Token));
+    for (int i=0; i<5; i++) {
+        tokens[i] = (Token){.type=END};
+    }
     char label[MAX_TOKEN_SIZE+1];
     char instr[MAX_TOKEN_SIZE+1];
     char arg1[17];
@@ -142,7 +145,7 @@ Token* Translation_tokenize(char* line) {
 Token arg_to_token(const char* arg) {
     if (arg[0]=='%' && arg[1]=='r') {
         char* endptr;
-        int reg = strtol(&arg[2],&endptr,0);
+        int reg = strtol(&arg[2],&endptr,10);
         if (*endptr != '\0') {
             printf("Tokenizer::Failed parsing register argument %s\n",arg);
         }
@@ -207,16 +210,87 @@ static uint16_t tokens_to_instr(Token* tokens) {
             out |= (tokens[3].reg & 0x7)<<3;
             break;
         case I_TYPE:
-            if (tokens[1].type != REG || (tokens[2].type != REG && tokens[2].type != LABEL)) {
+            if (!(tokens[1].type == IMM || tokens[1].type == LABEL)
+                    && !(tokens[1].type == REG && (tokens[2].type == IMM || tokens[2].type == LABEL))) {
                 printf("Translation::Expected '%s REG, IMM' or '%s REG, LABEL\n",tokens[0].name,tokens[0].name);
                 return -1;
             }
             out |= (op & 0xf)<<12;
-            out |= (tokens[1].reg & 0x7)<<9;
-            out |= (tokens[2].reg & 0x7)<<6;
+            if (tokens[1].type == REG) {
+                out |= (tokens[1].reg & 0x7)<<9;
+                if (tokens[2].type != IMM) {
+                    out |= tokens[2].immediate & 0xff;
+                } else {
+                    Label* label = get_label(tokens[2].name);
+                    if (label == NULL) {
+                        printf("Translation::Label %s not defined\n",tokens[2].name);
+                        return -1;
+                    }
+                    out |= label->value & 0xff;
+                }
+            } else {
+                out |= (0 & 0x7)<<9;
+                if (tokens[1].type != IMM) {
+                    out |= tokens[1].immediate & 0xff;
+                } else {
+                    Label* label = get_label(tokens[1].name);
+                    if (label == NULL) {
+                        printf("Translation::Label %s not defined\n",tokens[1].name);
+                        return -1;
+                    }
+                    out |= label->value & 0xff;
+                }
+
+            }
             break;
         case NOP:
             break;
     }
     return out;
+}
+
+
+void Translation_token_to_str(Token* token, char* out) {
+    char* type;
+    char val[17];
+    switch(token->type) {
+        case LABEL:
+            type = "LABEL";
+            strcpy(val,token->name);
+            break;
+        case INSTR:
+            type = "INSTR";
+            strcpy(val,token->name);
+            break;
+        case REG:
+            type = "REG";
+            sprintf(val,"%d",token->reg);
+            break;
+        case IMM:
+            type = "IMM";
+            sprintf(val,"%d",token->immediate);
+            break;
+        case END:
+            type = "END";
+            strcpy(val,"__");
+            break;
+        case INVALID:
+            type = "INVALID";
+            strcpy(val,"__");
+            break;
+        default:
+            type = "UNKNOWN";
+            strcpy(val,"__");
+            break;
+    }
+    sprintf(out,"Token: %s, %s\n",type,val);
+}
+
+
+int Translation_token_cmpeq(Token* token, Token* other) {
+    return (token->type==LABEL && other->type==LABEL && !strcmp(token->name,other->name))
+        || (token->type==INSTR && other->type==INSTR  && !strcmp(token->name,other->name))
+        || (token->type==REG && other->type==REG  && token->reg==other->reg)
+        || (token->type==IMM && other->type==IMM  && token->immediate==other->immediate)
+        || (token->type==other->type);
 }
