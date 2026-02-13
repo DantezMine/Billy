@@ -2,6 +2,7 @@
 #include "Component.h"
 #include <ctype.h>
 #include <stdint.h>
+#include <stdio.h>
 
 static uint16_t tokens_to_instr(Token* tokens);
 static Label* get_label(char* name);
@@ -14,7 +15,9 @@ static int labels_indx;
 static int labels_size;
 
 // ByteCode.instr must be freed after use
-ByteCode Translation_translate(char* str_assembly) {
+ByteCode Translation_translate(char* path) {
+    FILE* source = fopen(path,"r");
+
     labels = malloc(16*sizeof(Label));
     labels_indx = 0;
     labels_size = 16;
@@ -22,7 +25,6 @@ ByteCode Translation_translate(char* str_assembly) {
     int num_instr = 0;
     int line_count = 0;
     
-    size_t offset = 0;
 
     // Dynamic array
     Token* tokens = malloc(sizeof(Token)*100);
@@ -31,9 +33,8 @@ ByteCode Translation_translate(char* str_assembly) {
     char* line = malloc(512*sizeof(char));
 
     while (1) {
-        if (sscanf(str_assembly+offset,"%511[^\n]",line) == -1) break;
+        if (fscanf(source,"%511[^\n]%*[\n]",line) == -1) break;
         if (*line == EOF || *line == '\0') break;
-        offset += strlen(line)+1;
 
 
         // Get tokens from line string and add them to the tokens list
@@ -81,6 +82,7 @@ ByteCode Translation_translate(char* str_assembly) {
         }
     }
 
+    fclose(source);
     free(line);
     ByteCode bc_out = (ByteCode){num_instr, malloc(num_instr * sizeof(uint16_t))};
 
@@ -122,7 +124,11 @@ Token* Translation_tokenize(char* line) {
         free(tokens);
         return NULL;
     }
-    else if (sscanf(line," %*1[.]%[^:]",label) == 1) {
+    else if (sscanf(line," %1[.]%32[a-zA-Z0-9]%1[:]",arg1,label,arg2) == 3) {
+        if (isdigit(label[0])) {
+            printf("Tokenizer::Illegal first character in label %s\n",label);
+            return NULL;
+        }
         tokens[0] = (Token){.type=LABEL};
         strcpy(tokens[0].name,label);
     } else if ((n = sscanf(line," %32s %16[^,] , %16[^,] , %16[^,]",instr,arg1,arg2,arg3))) {
@@ -234,7 +240,6 @@ static uint16_t tokens_to_instr(Token* tokens) {
                     out |= label->value & 0xff;
                 }
             } else {
-                out |= (0 & 0x7)<<9;
                 if (tokens[1].type == IMM) {
                     out |= tokens[1].immediate & 0xff;
                 } else {
@@ -301,9 +306,17 @@ int Translation_token_cmpeq(Token* token, Token* other) {
 }
 
 static uint16_t swap_endian(uint16_t in) {
-    // printf("Before: 0x%x\n",in);
     uint8_t low = in;
     uint8_t high = (in>>8);
-    // printf("After: 0x%x\n",(low<<8) | high);
     return (low<<8) | high;
+}
+
+
+ByteCode Translation_translate_str(char* source) {
+    FILE* tempfile = fopen("temp_assembly.txt","w+");
+    fputs(source,tempfile);
+    fclose(tempfile);
+    ByteCode result = Translation_translate("temp_assembly.txt");
+    remove("temp_assembly.txt");
+    return result;
 }

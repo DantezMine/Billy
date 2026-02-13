@@ -508,7 +508,7 @@ vango_test(translate_medium_test) {
         "   LDI %r2, 26\n"
         "   ADD %r2, %r2, %r1\n"
         "";
-    ByteCode bc = Translation_translate(assembly);
+    ByteCode bc = Translation_translate_str(assembly);
 
     vg_assert_eq(bc.num_instr,6);
     for (int i=0; i < bc.num_instr; i++) {
@@ -544,7 +544,7 @@ vango_test(translate_medium_label) {
         "   ADD %r2, %r2, %r1\n"
         ".END:\n"
         "";
-    ByteCode bc = Translation_translate(assembly);
+    ByteCode bc = Translation_translate_str(assembly);
 
     vg_assert_eq(bc.num_instr,6);
     for (int i=0; i < bc.num_instr; i++) {

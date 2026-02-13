@@ -85,6 +85,7 @@ typedef struct Memory {
 } Memory;
 
 
+// Big-endian instruction
 typedef struct DecodeUnit {
     Register instruction_High;
     Register instruction_Low;
