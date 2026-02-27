@@ -7,12 +7,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Component.h"
+#include "CPU.h"
 
 #define MAX_TOKEN_SIZE 32
 
 typedef struct ByteCode {
     int num_instr;
-    uint16_t* instr;
+    Instruction* instr;
 } ByteCode;
 
 
@@ -40,9 +41,27 @@ typedef struct Token {
 } Token;
 
 
+static const char* register_labels[] = {
+    "r00",
+    "rax",
+    "rbx",
+    "rcx",
+    "rdx",
+    "rex",
+    "rsp",
+    "rbp",
+};
+
+
 ByteCode Translation_translate(char* path);
+
 Token* Translation_tokenize(char* line);
+
 void Translation_token_to_str(Token* token, char* out);
+
 int Translation_token_cmpeq(Token* token, Token* other);
+
 ByteCode Translation_translate_str(char* source);
+
+void Translation_instr_to_str(uint16_t instr, char* out, int width);
 #endif

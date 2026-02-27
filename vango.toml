@@ -2,6 +2,7 @@
 name = "BillyApp"
 version = "0.1.0"
 lang = "C11"
+compiler-options = ["--no-warnings"]
 
 [dependencies]
 CSFML   = { path="libs/CSFML" }

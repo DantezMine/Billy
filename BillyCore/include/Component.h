@@ -19,7 +19,6 @@
 
 #define MEM_SIZE 128
 
-
 typedef enum INSTR_TYPE {
     M_TYPE,
     R_TYPE,
@@ -65,6 +64,7 @@ static INSTR_TYPE instr_type[] = {
     I_TYPE,
     NOP,
 };
+
 
 typedef struct Register {
     uint8_t data;

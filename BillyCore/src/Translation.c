@@ -96,7 +96,7 @@ ByteCode Translation_translate(char* path) {
             continue;
         }
         // convert to bytecode
-        bc_out.instr[i] = swap_endian(tokens_to_instr(current_token));
+        bc_out.instr[i].instr = swap_endian(tokens_to_instr(current_token));
         // move current_token to next line
         int tokens_in_instr = 0; //includes the END token
         while(current_token[tokens_in_instr++].type != END);
@@ -309,6 +309,33 @@ static uint16_t swap_endian(uint16_t in) {
     uint8_t low = in;
     uint8_t high = (in>>8);
     return (low<<8) | high;
+}
+
+
+void Translation_instr_to_str(uint16_t instr, char* out, int width) {
+    uint16_t op = (instr>>12) & 0xf;
+    const char* mnemonic = instr_table[op];
+    const char* regDest = register_labels[(instr>>9)&0x7];
+    const char* reg1 = register_labels[(instr>>6)&0x7];
+    const char* reg2 = register_labels[(instr>>3)&0x7];
+    uint16_t immM = instr & 0x3f;
+    uint16_t immI = instr & 0xff;
+    switch (instr_type[op]) {
+    case NOP:
+        sprintf_s(out, width, "NOP");
+        break;
+    case R_TYPE:
+        sprintf_s(out, width, "%s %%%s, %%%s, %%%s",mnemonic,regDest,reg1,reg2);
+        break;
+    case M_TYPE:
+        sprintf_s(out, width, "%s %%%s, %%%s, 0x%x",mnemonic,regDest,reg1,immM);
+        break;
+    case I_TYPE:
+        sprintf_s(out, width, "%s %%%s, 0x%x",mnemonic,regDest,immI);
+        break;
+    default:
+        printf("Translation::instr_to_str Unexpected instruction!\n");
+    }
 }
 
 

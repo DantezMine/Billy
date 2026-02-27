@@ -1,5 +1,6 @@
 #include "CPU.h"
 #include "Component.h"
+#include "Instructions.h"
 #include <malloc.h>
 #include <stdio.h>
 
@@ -41,6 +42,7 @@ void CPU_Init() {
     decodeMemory->instruction_Low.data = 0;
     decodeWriteback->instruction_High.data = 0;
     decodeWriteback->instruction_Low.data = 0;
+    regFileA->reg[0].data = 0;
 
     PC->data = PC_START;
     bool* branchPC = malloc(sizeof(bool));
@@ -166,4 +168,35 @@ RegisterFile* CPU_getRegisterFile() {
 
 Register* CPU_getPC() {
     return fetchStage.PC;
+}
+
+
+uint16_t CPU_getStageFetchInstr() {
+    return ((Instruction){
+            .low =fetchStage.memoryInstr->reg[fetchStage.PC->data+1].data,
+            .high=fetchStage.memoryInstr->reg[fetchStage.PC->data  ].data}).instr;
+}
+
+uint16_t CPU_getStageDecodeInstr() {
+    return ((Instruction){
+            .low =decodeStage.decodeDecode->instruction_Low.data,
+            .high=decodeStage.decodeDecode->instruction_High.data}).instr;
+}
+
+uint16_t CPU_getStageExecuteInstr() {
+    return ((Instruction){
+            .low =executeStage.decodeExecute->instruction_Low.data,
+            .high=executeStage.decodeExecute->instruction_High.data}).instr;
+}
+
+uint16_t CPU_getStageMemoryInstr() {
+    return ((Instruction){
+            .low =memoryStage.decodeMemory->instruction_Low.data,
+            .high=memoryStage.decodeMemory->instruction_High.data}).instr;
+}
+
+uint16_t CPU_getStageWritebackInstr() {
+    return ((Instruction){
+            .low =writebackStage.decodeWriteback->instruction_Low.data,
+            .high=writebackStage.decodeWriteback->instruction_High.data}).instr;
 }

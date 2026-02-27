@@ -20,7 +20,7 @@
   ((byte) & 0x02 ? '1' : '0'), \
   ((byte) & 0x01 ? '1' : '0') 
 
-// #define PRINT_ASSERTS
+#define PRINT_ASSERTS
 
 #ifdef PRINT_ASSERTS
 #define PRINT(...) (printf(__VA_ARGS__))
@@ -512,8 +512,8 @@ vango_test(translate_medium_test) {
 
     vg_assert_eq(bc.num_instr,6);
     for (int i=0; i < bc.num_instr; i++) {
-        PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected: 0x%x\n",i,bc.instr[i],i, ((uint16_t*)instr)[i]);
-        vg_assert_eq(bc.instr[i], ((uint16_t*)instr)[i]);
+        PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected   : 0x%x\n",i,bc.instr[i].instr,i, ((uint16_t*)instr)[i]);
+        vg_assert_eq(bc.instr[i].instr, ((uint16_t*)instr)[i]);
     }
 
     free(bc.instr);
@@ -548,8 +548,8 @@ vango_test(translate_medium_label) {
 
     vg_assert_eq(bc.num_instr,6);
     for (int i=0; i < bc.num_instr; i++) {
-        PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected: 0x%x\n",i,bc.instr[i],i, ((uint16_t*)instr)[i]);
-        vg_assert_eq(bc.instr[i], ((uint16_t*)instr)[i]);
+        PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected   : 0x%x\n",i,bc.instr[i].instr,i, ((uint16_t*)instr)[i]);
+        vg_assert_eq(bc.instr[i].instr, ((uint16_t*)instr)[i]);
     }
 
     free(bc.instr);
