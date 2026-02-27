@@ -26,10 +26,10 @@ void handle_mouse_released(sfRenderWindow* window, sfEvent* event) {
     sfVector2u mouse_pos = (sfVector2u) {mouse_event.x,mouse_event.y};
     switch (mouse_event.button) {
         case sfMouseLeft:
-            printf("Mouse left released at (%u, %u)\n",mouse_pos.x,mouse_pos.y);
+            // printf("Mouse left released at (%u, %u)\n",mouse_pos.x,mouse_pos.y);
             break;
         case sfMouseRight:
-            printf("Mouse right released at (%u, %u)\n",mouse_pos.x,mouse_pos.y);
+            // printf("Mouse right released at (%u, %u)\n",mouse_pos.x,mouse_pos.y);
             break;
         default:
             break;

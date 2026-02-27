@@ -1,8 +1,5 @@
 #include "gui.h"
 #include "CPU.h"
-#include "SFML/Graphics/RectangleShape.h"
-#include "SFML/Graphics/Text.h"
-#include "SFML/System/Vector2.h"
 #include "Translation.h"
 #include "utils/vec2.h"
 #include <malloc.h>
