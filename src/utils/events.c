@@ -12,7 +12,7 @@ void handle_keyreleased(sfRenderWindow* window, sfEvent* event) {
             sfRenderWindow_close(window);
             break;
         case sfKeyC:
-            printf("Stepping CPU\n");
+            // printf("Stepping CPU\n");
             CPU_Clock();
             gui_clock();
         default:

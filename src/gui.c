@@ -20,6 +20,8 @@ static void update_elements();
 static void draw_elements(sfRenderWindow* window);
 static sfVector2f compute_position(GUI_Container* elem);
 static void position_DFS(int curr, char* visited);
+static int memory_offset_data(int stack_pointer);
+static int memory_offset_instr(int pc);
 
 typedef enum {
     F,D,E,M,W,
@@ -39,7 +41,7 @@ sfView* gui_init(sfRenderWindow* window) {
     guiview = sfView_createFromRect((sfFloatRect){ 0, 0, window_size.x, window_size.y });
     sfRenderWindow_setView(window,guiview);
 
-    main_font = sfFont_createFromFile("res/LiterationMonoNerdFontMono-Regular.ttf");
+    main_font = sfFont_createFromFile("res/LiterationMonoNerdFontMono-Bold.ttf");
 
     rect = sfRectangleShape_create();
     sfRectangleShape_setFillColor(rect, COLOR_FILL);
@@ -131,28 +133,48 @@ static void update_elements() {
                 break;
             case GUI_INSTRUCIONS:
                 elements[i].text[0] = 0;
-                mem_offset = fmax(0,fmin(CPU_getPC()->data-4,190));
+                int pc = CPU_getPC()->data;
+                mem_offset = memory_offset_instr(pc);
                 for (int k=0; k<18; k++) {
                     Translation_instr_to_str(CPU_PeekInstructionMemory16(mem_offset+k*2), instr_disas, 50);
-                    sprintf_s(instr_line,50,"0x%2x : %2x %2x  # %s\n",
-                            mem_offset+k*2,
-                            CPU_PeekInstructionMemory(mem_offset+k*2),
-                            CPU_PeekInstructionMemory(mem_offset+k*2+1),
-                            instr_disas);
-                    strcat_s(elements[i].text,1000,instr_line);
+                    if (pc == mem_offset+k*2) {
+                        sprintf_s(instr_line,50,"pc -> 0x%2x : %2x %2x  # %s\n",
+                                mem_offset+k*2,
+                                CPU_PeekInstructionMemory(mem_offset+k*2),
+                                CPU_PeekInstructionMemory(mem_offset+k*2+1),
+                                instr_disas);
+                        strcat_s(elements[i].text,1000,instr_line);
+                    } else {
+                        sprintf_s(instr_line,50,"      0x%2x : %2x %2x  # %s\n",
+                                mem_offset+k*2,
+                                CPU_PeekInstructionMemory(mem_offset+k*2),
+                                CPU_PeekInstructionMemory(mem_offset+k*2+1),
+                                instr_disas);
+                        strcat_s(elements[i].text,1000,instr_line);
+                    }
                 }
                 break;
             case GUI_DATA:
                 elements[i].text[0] = 0;
-                mem_offset = fmin(252,fmax(CPU_getRegisterFile()->reg[6].data+8,164));
+                int stack_pointer = CPU_getRegisterFile()->reg[6].data;
+                mem_offset = memory_offset_data(stack_pointer);
                 mem_offset -= fmod(mem_offset,4); // four byte aligned
                 for (int k=0; k<18; k++) {
-                    sprintf_s(instr_line,50,"0x%2x : %2x %2x %2x %2x\n",
-                            mem_offset-k*2,
-                            CPU_PeekDataMemory(mem_offset-k*4),
-                            CPU_PeekDataMemory(mem_offset-k*4+1),
-                            CPU_PeekDataMemory(mem_offset-k*4+2),
-                            CPU_PeekDataMemory(mem_offset-k*4+3));
+                    if (stack_pointer >= mem_offset-k*4 && stack_pointer <= mem_offset-k*4+3) {
+                        sprintf_s(instr_line,50,"rsp -> 0x%2x : %2x %2x %2x %2x\n",
+                                mem_offset-k*2,
+                                CPU_PeekDataMemory(mem_offset-k*4),
+                                CPU_PeekDataMemory(mem_offset-k*4+1),
+                                CPU_PeekDataMemory(mem_offset-k*4+2),
+                                CPU_PeekDataMemory(mem_offset-k*4+3));
+                    } else {
+                        sprintf_s(instr_line,50,"       0x%2x : %2x %2x %2x %2x\n",
+                                mem_offset-k*2,
+                                CPU_PeekDataMemory(mem_offset-k*4),
+                                CPU_PeekDataMemory(mem_offset-k*4+1),
+                                CPU_PeekDataMemory(mem_offset-k*4+2),
+                                CPU_PeekDataMemory(mem_offset-k*4+3));
+                    }
                     strcat_s(elements[i].text,1000,instr_line);
                 }
                 break;
@@ -160,6 +182,14 @@ static void update_elements() {
                 break;
         }
     }
+}
+
+
+static int memory_offset_data(int stack_pointer) {
+    return fmin(252,fmax(stack_pointer+8,164));
+}
+static int memory_offset_instr(int pc) {
+    return fmax(0,fmin(pc-4,190));
 }
 
 static void draw_elements(sfRenderWindow* window) {
@@ -184,15 +214,15 @@ static void draw_elements(sfRenderWindow* window) {
             sfText_setPosition(text, vec2f_add(vec2f_scale(elements[i].computed_pos,gui_scale),text_offset));
             break;
         case GUI_REGISTERS:
-            text_offset = (sfVector2f) {char_width, char_bounds.height};
+            text_offset = (sfVector2f) {char_width, char_bounds.height*2};
             sfText_setPosition(text, vec2f_add(vec2f_scale(elements[i].computed_pos,gui_scale),text_offset));
             break;
         case GUI_INSTRUCIONS:
-            text_offset = (sfVector2f) {char_width, char_bounds.height};
+            text_offset = (sfVector2f) {char_width, char_bounds.height*2};
             sfText_setPosition(text, vec2f_add(vec2f_scale(elements[i].computed_pos,gui_scale),text_offset));
             break;
         case GUI_DATA:
-            text_offset = (sfVector2f) {char_width, char_bounds.height};
+            text_offset = (sfVector2f) {char_width, char_bounds.height*2};
             sfText_setPosition(text, vec2f_add(vec2f_scale(elements[i].computed_pos,gui_scale),text_offset));
             break;
         default:
@@ -458,8 +488,8 @@ static void setup_elements() {
         .parent = 15,
         .children = {17},
         .relation = REL_RIGHT_TOP,
-        .rel_pos = (sfVector2f) {70,0},
-        .size = (sfVector2f) {490, 474},
+        .rel_pos = (sfVector2f) {45,0},
+        .size = (sfVector2f) {570, 474},
         .text = calloc(1000,1),
     };
     elements[17] = (GUI_Container) {
@@ -467,8 +497,8 @@ static void setup_elements() {
         .parent = 16,
         .children = {},
         .relation = REL_RIGHT_TOP,
-        .rel_pos = (sfVector2f) {160, 0},
-        .size = (sfVector2f) {283, 474},
+        .rel_pos = (sfVector2f) {45, 0},
+        .size = (sfVector2f) {360, 474},
         .text = calloc(1000,1),
     };
 

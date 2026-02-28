@@ -4,11 +4,11 @@
 #include <SFML/Graphics.h>
 #include "CPU.h"
 
-#define COLOR_BACKGROUND  sfColor_fromInteger(0x202020FF)
-#define COLOR_TEXT        sfColor_fromInteger(0xFFFFFFFF)
-#define COLOR_BORDER      sfColor_fromInteger(0x000000FF)
-#define COLOR_FILL        sfColor_fromInteger(0x4E4EF5FF)
-#define BORDER_THICKNESS  0.001
+#define COLOR_BACKGROUND  sfColor_fromInteger(0x5050EDFF)
+#define COLOR_TEXT        sfColor_fromInteger(0xEEEEEEFF)
+#define COLOR_BORDER      sfColor_fromInteger(0xFFFFFFFF)
+#define COLOR_FILL        sfColor_fromInteger(0x555555FF)
+#define BORDER_THICKNESS  0.002
 #define TEXT_SIZE         22
 
 typedef enum GUI_content_type {
