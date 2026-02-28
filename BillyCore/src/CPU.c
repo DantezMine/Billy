@@ -200,3 +200,23 @@ uint16_t CPU_getStageWritebackInstr() {
             .low =writebackStage.decodeWriteback->instruction_Low.data,
             .high=writebackStage.decodeWriteback->instruction_High.data}).instr;
 }
+
+uint8_t CPU_PeekInstructionMemory(int addr) {
+    return fetchStage.memoryInstr->reg[addr].data;
+}
+
+uint8_t CPU_PeekDataMemory(int addr) {
+    return memoryStage.memoryData->reg[addr].data;
+}
+
+uint16_t CPU_PeekInstructionMemory16(int addr) {
+    return ((Instruction){
+            .low  =fetchStage.memoryInstr->reg[addr+1].data,
+            .high =fetchStage.memoryInstr->reg[addr].data,}).instr;
+}
+
+uint16_t CPU_PeekDataMemory16(int addr) {
+    return ((Instruction){
+            .low  =memoryStage.memoryData->reg[addr+1].data,
+            .high =memoryStage.memoryData->reg[addr].data,}).instr;
+}

@@ -2,6 +2,7 @@
 #define CPU_H
 
 #include "Component.h"
+#include <stdint.h>
 
 #define PC_START 0
 
@@ -21,6 +22,14 @@ void CPU_Clock();
 void CPU_SetInstructionMemory(uint8_t instr[128]);
 
 void CPU_SetDataMemory(uint8_t data[128]);
+
+uint8_t CPU_PeekInstructionMemory(int addr);
+
+uint8_t CPU_PeekDataMemory(int addr);
+
+uint16_t CPU_PeekInstructionMemory16(int addr);
+
+uint16_t CPU_PeekDataMemory16(int addr);
 
 StageFetch* CPU_getStageFetch();
 

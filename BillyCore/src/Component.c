@@ -5,6 +5,8 @@
 
 // #define CPU_DEBUG
 
+#define DATA_MEM_OFFSET 128
+
 static uint8_t getInstruction(uint8_t instrHigh, uint8_t instrLow);
 static uint8_t getDestRegister(uint8_t instrHigh, uint8_t instrLow);
 static uint8_t getSource1Register(uint8_t instrHigh, uint8_t instrLow);
@@ -324,8 +326,8 @@ void StageMemory_update(StageMemory* memoryStage) {
         out = memoryStage->memoryData->reg[in].data;
     }
     if (getControlBitMemory(instrMem, 3)) {
-        memoryStage->memoryData->reg[in].in = memoryStage->writeRegister->reg[regSource1].data;
-        memoryStage->memoryData->reg[in].write = true;
+        memoryStage->memoryData->reg[in-DATA_MEM_OFFSET].in = memoryStage->writeRegister->reg[regSource1].data;
+        memoryStage->memoryData->reg[in-DATA_MEM_OFFSET].write = true;
         Register_clock(&memoryStage->memoryData->reg[in]);
         memoryStage->memoryData->reg[in].write = false;
     }

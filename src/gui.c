@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static sfView* guiview;
 
@@ -106,6 +107,9 @@ static void update_elements() {
                     "rsp : 0x%2x  / %3u\n"
                     "rbp : 0x%2x  / %3u\n"
                     " pc : 0x%2x  / %3u\n";
+    int mem_offset = 0;
+    char instr_disas[50];
+    char instr_line[50];
     for (int i=0; i<18; i++) {
         switch (elements[i].content_type) {
             case GUI_INSTR:
@@ -124,6 +128,33 @@ static void update_elements() {
                         regs->reg[7].data,regs->reg[7].data,
                         CPU_getPC()->data,CPU_getPC()->data
                         );
+                break;
+            case GUI_INSTRUCIONS:
+                elements[i].text[0] = 0;
+                mem_offset = fmax(0,fmin(CPU_getPC()->data-4,190));
+                for (int k=0; k<18; k++) {
+                    Translation_instr_to_str(CPU_PeekInstructionMemory16(mem_offset+k*2), instr_disas, 50);
+                    sprintf_s(instr_line,50,"0x%2x : %2x %2x  # %s\n",
+                            mem_offset+k*2,
+                            CPU_PeekInstructionMemory(mem_offset+k*2),
+                            CPU_PeekInstructionMemory(mem_offset+k*2+1),
+                            instr_disas);
+                    strcat_s(elements[i].text,1000,instr_line);
+                }
+                break;
+            case GUI_DATA:
+                elements[i].text[0] = 0;
+                mem_offset = fmin(252,fmax(CPU_getRegisterFile()->reg[6].data+8,164));
+                mem_offset -= fmod(mem_offset,4); // four byte aligned
+                for (int k=0; k<18; k++) {
+                    sprintf_s(instr_line,50,"0x%2x : %2x %2x %2x %2x\n",
+                            mem_offset-k*2,
+                            CPU_PeekDataMemory(mem_offset-k*4),
+                            CPU_PeekDataMemory(mem_offset-k*4+1),
+                            CPU_PeekDataMemory(mem_offset-k*4+2),
+                            CPU_PeekDataMemory(mem_offset-k*4+3));
+                    strcat_s(elements[i].text,1000,instr_line);
+                }
                 break;
             default:
                 break;
@@ -153,6 +184,14 @@ static void draw_elements(sfRenderWindow* window) {
             sfText_setPosition(text, vec2f_add(vec2f_scale(elements[i].computed_pos,gui_scale),text_offset));
             break;
         case GUI_REGISTERS:
+            text_offset = (sfVector2f) {char_width, char_bounds.height};
+            sfText_setPosition(text, vec2f_add(vec2f_scale(elements[i].computed_pos,gui_scale),text_offset));
+            break;
+        case GUI_INSTRUCIONS:
+            text_offset = (sfVector2f) {char_width, char_bounds.height};
+            sfText_setPosition(text, vec2f_add(vec2f_scale(elements[i].computed_pos,gui_scale),text_offset));
+            break;
+        case GUI_DATA:
             text_offset = (sfVector2f) {char_width, char_bounds.height};
             sfText_setPosition(text, vec2f_add(vec2f_scale(elements[i].computed_pos,gui_scale),text_offset));
             break;

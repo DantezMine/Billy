@@ -81,26 +81,41 @@ Output: Array of tokens (heap allocated), ending with token of type "END".
 
 ### Patterns
 Returns NULL on lines containing only a comment, denoted by \#.
+
 Returns NULL if the input doesn't match the expected patterns declared below.
+
 _Note:_ Any number of whitespace allowed before first character, and typically between seperate tokens.
+
 The following are defined in POSIX-style regular expressions.
+
 \<name\>: [:alpha:][:alnum:]*
+
 \<register\>: %r[:digit:]+}
+
 \<immediate\>: 0x[:xdigit:] | 0b[01] | (0d)?[:digit:]
+
 Labels (definition): [.](name)[:]
+
 Instructions: (name)* [(register)|(immediate)|(name),]\{,3\}
 
 ### Token Structure
 Register tokens store the register index in the `reg` field.
+
 Label and instruction tokens store the sequence of characters as a null-terminated string in the `name` field.
+
 Immediate tokens convert the string form of their value into the corresponding integer value in the `immediate` field.
+
 Invalid and end tokens store no value.
 
 ## Translator
 Input: Path to file containing the assembly code.
+
 Output: Bytecode structure containing
+
 - `int num_instr`: Number of instruction lines
+
 - `uint16_t* instr`: Array of data (heap allocated) with all instructions in machine code with big endian formatting.
+
 ### Procedure
 Passes through the input line by line, tokenizing each line as it goes.
 - Invokes the tokenizer on null-terminated line string.
@@ -112,12 +127,16 @@ Passes through the input line by line, tokenizing each line as it goes.
 - Counts number of lines starting with an instruction token in variable `num_instr`.
 	- Instruction address is twice the value of `num_instr`, as instructions are byte addressed.
 - Returns NULL if first token of line is neither an instruction or label token.
+
 Second pass iterates through all lines of tokens and converts the tokens into a big endian two-byte instruction.
 ### Tokens to Machine Code
 Input: Array of tokens.
+
 Output: Little endian two-byte instruction.
 
+
 Opcode is found from instruction table and string comparison.
+
 Based on instruction type, tokens are checked to match the correct pattern, as defined by the ISA.
 - I-type can accept either labels or immediates in the immediate field.
 - I-type can optionally receive no register argument, in which case the zero-register is taken.
