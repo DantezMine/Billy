@@ -1,0 +1,13 @@
+[staticlib]
+name = "PCRE"
+version = "8.0.0"
+lang = "C99"
+include = "include"
+
+[profile.debug]
+libdir = "lib"
+binaries = [ "pcre2-8", "pcre2-posix" ]
+
+[profile.release]
+libdir = "lib/gcc"
+binaries = [ "pcre2-8", "pcre2-posix" ]
