@@ -7,11 +7,6 @@
 #define MAX_TOKEN_SIZE 32
 
 
-typedef struct Label {
-    size_t value;
-    char name[MAX_TOKEN_SIZE];
-} Label;
-
 typedef enum Token_Type {
     WORD,
     REG,
@@ -34,7 +29,7 @@ typedef struct Token {
 typedef struct Lexer_Pattern {
     Token_Type token_type;
     regex_t regexp;
-    char* pattern;
+    char pattern[100];
 } Lexer_Pattern;
 
 typedef struct Lexer_Iterator {

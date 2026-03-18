@@ -4,7 +4,7 @@ version = "0.1.0"
 lang = "C11"
 kind = "staticlib"
 include = ["include"]
-compiler-options = ["--no-warnings"]
+compiler-options = ["--no-warnings","-Wno-unused-variable"]
 
 [dependencies]
 PCRE    = { path="libs/PCRE2" }

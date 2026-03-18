@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "Instructions.h"
 #include "Lexer.h"
+#include "Parser.h"
 
 #define VANGO_TEST_ROOT
 #include <vangotest/casserts.h>
@@ -20,7 +21,7 @@
   ((byte) & 0x02 ? '1' : '0'), \
   ((byte) & 0x01 ? '1' : '0') 
 
-#define PRINT_ASSERTS
+// #define PRINT_ASSERTS
 
 #ifdef PRINT_ASSERTS
 #define PRINT(...) (printf(__VA_ARGS__))
@@ -400,161 +401,6 @@ vango_test(blt_notjump) {
     vg_assert_eq(pc, 20);
 }
 
-// vango_test(translate_tokenize_LDA) {
-//     char* line = "  LDA     %r5, %r1, 0x2f";
-//     Token* tokens = Translation_tokenize(line);
-//     Token tokens_exp[] = {
-//         (Token){.type=INSTR,.name="LDA"},
-//         (Token){.type=REG,.reg=5},
-//         (Token){.type=REG,.reg=1},
-//         (Token){.type=IMM,.immediate=0x2f},
-//         (Token){.type=END},
-//     };
-//     for (int i=0; i<5; i++) {
-//         char token_str[50];
-//         Translation_token_to_str(&tokens[i],token_str);
-//         PRINT("%s\n",token_str);
-//         vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
-//     }
-// };
-//
-// vango_test(translate_tokenize_LDI) {
-//     char* line = "  LDI     %r5, 0x2f";
-//     Token* tokens = Translation_tokenize(line);
-//     Token tokens_exp[] = {
-//         (Token){.type=INSTR,.name="LDI"},
-//         (Token){.type=REG,.reg=5},
-//         (Token){.type=IMM,.immediate=0x2f},
-//         (Token){.type=END},
-//     };
-//     for (int i=0; i<4; i++) {
-//         char token_str[50];
-//         Translation_token_to_str(&tokens[i],token_str);
-//         PRINT("%s\n",token_str);
-//         vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
-//     }
-// };
-//
-// vango_test(translate_tokenize_ADD) {
-//     char* line = "  ADD     %r5, %r1, %r2";
-//     Token* tokens = Translation_tokenize(line);
-//     Token tokens_exp[] = {
-//         (Token){.type=INSTR,.name="ADD"},
-//         (Token){.type=REG,.reg=5},
-//         (Token){.type=REG,.reg=1},
-//         (Token){.type=REG,.reg=2},
-//         (Token){.type=END},
-//     };
-//     for (int i=0; i<5; i++) {
-//         char token_str[50];
-//         Translation_token_to_str(&tokens[i],token_str);
-//         PRINT("%s\n",token_str);
-//         vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
-//     }
-// };
-//
-// vango_test(translate_tokenize_BEQ) {
-//     char* line = "  BEQ     ABC";
-//     Token* tokens = Translation_tokenize(line);
-//     Token tokens_exp[] = {
-//         (Token){.type=INSTR,.name="BEQ"},
-//         (Token){.type=LABEL,.name="ABC"},
-//         (Token){.type=END},
-//     };
-//     for (int i=0; i<3; i++) {
-//         char token_str[50];
-//         Translation_token_to_str(&tokens[i],token_str);
-//         PRINT("%s\n",token_str);
-//         vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
-//     }
-// };
-//
-// vango_test(translate_tokenize_BLT) {
-//     char* line = "  BLT     0xe5";
-//     Token* tokens = Translation_tokenize(line);
-//     Token tokens_exp[] = {
-//         (Token){.type=INSTR,.name="BLT"},
-//         (Token){.type=IMM,.immediate=0xe5},
-//         (Token){.type=END},
-//     };
-//     for (int i=0; i<3; i++) {
-//         char token_str[50];
-//         Translation_token_to_str(&tokens[i],token_str);
-//         PRINT("%s\n",token_str);
-//         vg_assert(Translation_token_cmpeq(&tokens[i],&tokens_exp[i]));
-//     }
-// };
-//
-// vango_test(translate_medium_test) {
-//     uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
-//     instr[0] = Instr_I("LDI", 1, 14).high;
-//     instr[1] = Instr_I("LDI", 1, 14).low;
-//     instr[2] = Instr_I("LDI", 2, 14).high;
-//     instr[3] = Instr_I("LDI", 2, 14).low;
-//     instr[4] = Instr_R("SUB", 2, 2, 1).high;
-//     instr[5] = Instr_R("SUB", 2, 2, 1).low;
-//     instr[6] = Instr_I("BEQ", 0, 12).high;
-//     instr[7] = Instr_I("BEQ", 0, 12).low;
-//     instr[8] = Instr_I("LDI", 2, 26).high;
-//     instr[9] = Instr_I("LDI", 2, 26).low;
-//     instr[10] = Instr_R("ADD", 2, 2, 1).high;
-//     instr[11] = Instr_R("ADD", 2, 2, 1).low;
-//
-//     char* assembly = 
-//         "   LDI %r1, 14\n"
-//         "   LDI %r2, 14\n"
-//         "   SUB %r2, %r2, %r1\n"
-//         "   BEQ 12\n"
-//         "   LDI %r2, 26\n"
-//         "   ADD %r2, %r2, %r1\n"
-//         "";
-//     ByteCode bc = Translation_translate_str(assembly);
-//
-//     vg_assert_eq(bc.num_instr,6);
-//     for (int i=0; i < bc.num_instr; i++) {
-//         PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected   : 0x%x\n",i,bc.instr[i].instr,i, ((uint16_t*)instr)[i]);
-//         vg_assert_eq(bc.instr[i].instr, ((uint16_t*)instr)[i]);
-//     }
-//
-//     free(bc.instr);
-//     free(instr);
-// };
-//
-// vango_test(translate_medium_label) {
-//     uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
-//     instr[0] = Instr_I("LDI", 1, 14).high;
-//     instr[1] = Instr_I("LDI", 1, 14).low;
-//     instr[2] = Instr_I("LDI", 2, 14).high;
-//     instr[3] = Instr_I("LDI", 2, 14).low;
-//     instr[4] = Instr_R("SUB", 2, 2, 1).high;
-//     instr[5] = Instr_R("SUB", 2, 2, 1).low;
-//     instr[6] = Instr_I("BEQ", 0, 12).high;
-//     instr[7] = Instr_I("BEQ", 0, 12).low;
-//     instr[8] = Instr_I("LDI", 2, 26).high;
-//     instr[9] = Instr_I("LDI", 2, 26).low;
-//     instr[10] = Instr_R("ADD", 2, 2, 1).high;
-//     instr[11] = Instr_R("ADD", 2, 2, 1).low;
-//
-//     char* assembly = 
-//         "   LDI %r1, 14\n"
-//         "   LDI %r2, 14\n"
-//         "   SUB %r2, %r2, %r1\n"
-//         "   BEQ END\n"
-//         "   LDI %r2, 26\n"
-//         "   ADD %r2, %r2, %r1\n"
-//         ".END:\n"
-//         "";
-//     ByteCode bc = Translation_translate_str(assembly);
-//
-//     vg_assert_eq(bc.num_instr,6);
-//     for (int i=0; i < bc.num_instr; i++) {
-//         PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected   : 0x%x\n",i,bc.instr[i].instr,i, ((uint16_t*)instr)[i]);
-//         vg_assert_eq(bc.instr[i].instr, ((uint16_t*)instr)[i]);
-//     }
-//
-//     free(bc.instr);
-//     free(instr);
-// };
 
 vango_test(lexer_next) {
     char* set = " LDA %rax, %rbx, 0xdf";
@@ -582,6 +428,9 @@ vango_test(lexer_next) {
     token = Lexer_next(&it);
     vg_assert_eq(token.type, IMM);
     vg_assert(strncmp(token.name,"0xdf",sizeof("0xdf")) == 0);
+
+    token = Lexer_next(&it);
+    vg_assert_eq(token.type, END);
 }
 
 
@@ -638,6 +487,9 @@ vango_test(lexer_nextMulti) {
     token = Lexer_next(&it);
     vg_assert_eq(token.type, WORD);
     vg_assert(strncmp(token.name,"END",sizeof("END")) == 0);
+
+    token = Lexer_next(&it);
+    vg_assert_eq(token.type, END);
 }
 
 vango_test(lexer_nextComment) {
@@ -669,7 +521,47 @@ vango_test(lexer_nextComment) {
 
     token = Lexer_next(&it);
     vg_assert_eq(token.type, COMMENT);
+
+    token = Lexer_next(&it);
+    vg_assert_eq(token.type, END);
 }
+
+vango_test(translate_medium) {
+    uint8_t* instr = calloc(sizeof(uint8_t),MEM_SIZE);
+    instr[0] = Instr_I("LDI", 1, 14).high;
+    instr[1] = Instr_I("LDI", 1, 14).low;
+    instr[2] = Instr_I("LDI", 2, 14).high;
+    instr[3] = Instr_I("LDI", 2, 14).low;
+    instr[4] = Instr_R("SUB", 2, 2, 1).high;
+    instr[5] = Instr_R("SUB", 2, 2, 1).low;
+    instr[6] = Instr_I("BEQ", 0, 12).high;
+    instr[7] = Instr_I("BEQ", 0, 12).low;
+    instr[8] = Instr_I("LDI", 2, 26).high;
+    instr[9] = Instr_I("LDI", 2, 26).low;
+    instr[10] = Instr_R("ADD", 2, 2, 1).high;
+    instr[11] = Instr_R("ADD", 2, 2, 1).low;
+
+    char* assembly = 
+        "   LDI %rax, 14\n"
+        "   LDI %rbx, 14\n"
+        "   SUB %rbx, %rbx, %rax\n"
+        "   BEQ END\n"
+        "   LDI %rbx, 26\n"
+        "   ADD %rbx, %rbx, %rax\n"
+        ".END:\n"
+        "";
+    ByteCode bc = Parser_translate(assembly);
+
+    vg_assert_eq(bc.num_instr,5);
+    for (int i=0; i < bc.num_instr; i++) {
+        PRINT("(%d) -- Instruction: 0x%x\n(%d) -- Expected   : 0x%x\n",i,bc.instr[i].instr,i, ((uint16_t*)instr)[i]);
+        vg_assert_eq(bc.instr[i].instr, ((uint16_t*)instr)[i]);
+    }
+
+    Parser_free(&bc);
+    free(instr);
+};
+
 
 vango_test_main(
         vango_test_reg(Instruction_LDA);
@@ -697,4 +589,5 @@ vango_test_main(
         vango_test_reg(lexer_next);
         vango_test_reg(lexer_nextMulti);
         vango_test_reg(lexer_nextComment);
+        vango_test_reg(translate_medium);
 )

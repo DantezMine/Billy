@@ -4,22 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static int find_reg(const char* reg_name);
-
-static int parse_imm(const char* imm_name);
-
 static Token Lexer_Match(Lexer_Iterator* it);
-
-static const char* register_labels[] = {
-    "r00",
-    "rax",
-    "rbx",
-    "rcx",
-    "rdx",
-    "rex",
-    "rsp",
-    "rbp",
-};
 
 static char* pattern_next_word = "^([ \\t]*(.*))";
 static regex_t regexp_next_word;
@@ -59,6 +44,9 @@ Token Lexer_peek(Lexer_Iterator* it) {
 }
 
 static Token Lexer_Match(Lexer_Iterator* it) {
+    if (*it->pos == '\0') {
+        return (Token) {.type=END};
+    }
     char next_word[MAX_TOKEN_SIZE] = "";
 
     Token res = (Token) {.type=INVALID};
@@ -79,8 +67,6 @@ static Token Lexer_Match(Lexer_Iterator* it) {
     memcpy(next_word,nw_start,nw_len);
     next_word[nw_len] = '\0';
 
-    // printf("%s\n",it->pos);
-    // printf("%s\n",next_word);
     int bytes_wspace = regmatch_next_word[2].rm_so;
 
 
@@ -90,7 +76,6 @@ static Token Lexer_Match(Lexer_Iterator* it) {
         int d = regexec(&patterns[i].regexp, next_word, 5, regmatch, 0);
         if (d==0) {
             match = patterns[i].token_type;
-            // printf("Found regex match of type %d\n",match);
             break;
         }
     }
@@ -124,10 +109,16 @@ static Token Lexer_Match(Lexer_Iterator* it) {
         memcpy(res.name, match_start, match_len);
         break;
     case COMMA:
+        res.name[0] = ',';
+        res.name[1] = '\0';
         break;
     case COMMENT:
+        res.name[0] = '#';
+        res.name[1] = '\0';
         break;
     case END:
+        res.name[0] = '\n';
+        res.name[1] = '\0';
         break;
     case NEWLINE:
         break;
@@ -135,29 +126,4 @@ static Token Lexer_Match(Lexer_Iterator* it) {
         break;
     }
     return res;
-}
-
-static int find_reg(const char* reg_name) {
-    int reg = -1;
-    for (int i=0; i<8; i++) {
-        if (!strcmp(reg_name,register_labels[i])) {
-            reg = i;
-            break;
-        }
-    }
-    if (reg == -1) {
-        printf("Lexer::Match::Register label \"%s\" doesn't match possible registers.\n",reg_name);
-    }
-    return reg;
-}
-
-static int parse_imm(const char* imm_name) {
-    if (imm_name[0] != '0') {
-        return atoi(imm_name);
-    } else if (imm_name[1] == 'x') {
-        return strtol(imm_name, NULL, 16);
-    } else if (imm_name[1] == 'b') {
-        return strtol(imm_name, NULL, 2);
-    }
-    return 0;
 }
