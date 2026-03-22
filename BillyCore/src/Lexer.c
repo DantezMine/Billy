@@ -10,7 +10,7 @@ static char* pattern_next_word = "^([ \\t]*(.*))";
 static regex_t regexp_next_word;
 
 static Lexer_Pattern patterns[] = {
-    {.token_type = WORD, .pattern =     "^([a-zA-Z][a-zA-Z0-9]*)"},
+    {.token_type = WORD, .pattern =     "^([a-zA-Z][a-zA-Z0-9_]*)"},
     {.token_type = REG, .pattern =      "^(%(r([a-zA-Z0-9]{1,2})))"},
     {.token_type = IMM, .pattern =      "^((0x[0-9a-fA-F]*)|(0b[0-1]*)|([0-9]+))"},
     {.token_type = COMMA, .pattern =    "^,"},

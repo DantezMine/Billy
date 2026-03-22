@@ -1,0 +1,17 @@
+# needs loop counter
+    XOR %rax, %rax, %rax
+    LDI %rax, 0x8
+.MUL_LOOP:
+    LSL %rax, %rax
+    LDI %rbx, 0x80              # mask for MSB
+    AND %rbx, %rbx, %rdx
+    XOR %rbx, %rbx, %r00
+    BEQ MUL_SKP
+    ADD %rax, %rax, %rcx
+.MUL_SKP:
+    JMP MUL_LOOP
+.MUL_RET:
+    LDA %rbx, %rsp, 0           # pop ret address
+    LDI %rcx, 1
+    ADD %rsp, %rsp, %rcx
+    JMP %rbx, 0

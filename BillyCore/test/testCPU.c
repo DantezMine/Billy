@@ -562,6 +562,11 @@ vango_test(translate_medium) {
     free(instr);
 };
 
+vango_test(Parser_multiply) {
+    ByteCode bc = Parser_translate_from_file("test/testFiles/mult.txt");
+    vg_assert_ne(bc.num_instr, -1);
+};
+
 
 vango_test_main(
         vango_test_reg(Instruction_LDA);
@@ -590,4 +595,5 @@ vango_test_main(
         vango_test_reg(lexer_nextMulti);
         vango_test_reg(lexer_nextComment);
         vango_test_reg(translate_medium);
+        vango_test_reg(Parser_multiply);
 )

@@ -14,6 +14,7 @@
 static void* grow_array(void* arr, int* size);
 static char* src_to_str(char* path);
 static uint16_t swap_endian(uint16_t in);
+static void append_ref(Label** label_refs, int* label_refs_size, int* label_refs_indx, char* name, int instr_num);
 
 static int find_label(const char* name, Label* labels, int num_labels);
 static int parse_reg(const char* reg_name);
@@ -72,9 +73,9 @@ ByteCode Parser_translate(char* src) {
                 {
                     Token tok_label;
                     if ((tok_label = Lexer_next(&iter)).type != WORD)
-                        ERROR_TRANS("PARSER::TRANSLATE::Expected identifier after strt of label declaration");
+                        ERROR_TRANS("PARSER::TRANSLATE::Expected identifier after strt of label declaration\n");
                     if (Lexer_next(&iter).type != COLON)
-                        ERROR_TRANS("PARSER::TRANSLATE::Expected ':' at end of label declaration");
+                        ERROR_TRANS("PARSER::TRANSLATE::Expected ':' at end of label declaration\n");
                     if (find_label(tok_label.name, labels, label_indx+1) != -1) {
                         ERROR_TRANS("PARSER::TRANSLATE::Redeclaration of label \"%s\" at line %d\n", tok_label.name, line_num);
                     }
@@ -112,7 +113,7 @@ ByteCode Parser_translate(char* src) {
 
 ByteCode Parser_translate_from_file(char* path) {
     char* src_str = src_to_str(path);
-    ByteCode result = Parser_translate("temp_assembly.txt");
+    ByteCode result = Parser_translate(src_str);
     free(src_str);
     return result;
 }
@@ -135,7 +136,8 @@ static uint16_t parse_instr(Token* start_token, Lexer_Iterator* iter, int line_n
         ERROR_INSTR("PARSER::TRANSLATE::Non-existent instruction %s on line %d\n",start_token->name,line_num);
     }
     uint16_t instr = 0;
-    if (instr_type[opcode] == M_TYPE) {
+    switch(instr_type[opcode]) {
+    case M_TYPE: {
         Token tok_reg_src; 
         Token tok_reg_dst;
         Token tok_imm;
@@ -162,41 +164,43 @@ static uint16_t parse_instr(Token* start_token, Lexer_Iterator* iter, int line_n
         instr |= (reg_dst & 0x7) << 9;
         instr |= (reg_src & 0x7) << 6;
         instr |= imm & 0x3f;
-    } else if (instr_type[opcode] == I_TYPE) {
+        break;
+        }
+    case I_TYPE: {
         Token tok_reg_dst;
         Token tok_imm;
         Token tok_temp;
-        if ((tok_reg_dst = Lexer_next(iter)).type != REG) {
-            if (tok_reg_dst.type != IMM && tok_reg_dst.type != WORD) {
-                ERROR_INSTR("PARSER::TRANSLATE::Expected register, immediate or label, but got \"%s\", on line %d\n",
-                        tok_reg_dst.name,line_num);
-            }
-            // Add reference to label in label_refs and set immediate to 0
-            if (tok_reg_dst.type == WORD) {
-                if (*label_refs_indx == *label_refs_size-1) 
-                    *label_refs = grow_array(label_refs, label_refs_size);
-                (*label_refs)[++(*label_refs_indx)] = (Label) {.value = instr_num+1};
-                strncpy((*label_refs)[*label_refs_indx].name, tok_reg_dst.name, MAX_TOKEN_SIZE);
-                strcpy(tok_reg_dst.name, "0"); tok_reg_dst.type = IMM;
-            }
+        tok_reg_dst = Lexer_next(iter);
+        if (tok_reg_dst.type == WORD)
+        {
+            append_ref(label_refs,label_refs_size,label_refs_indx,tok_reg_dst.name,instr_num);
+            tok_imm.type = IMM;
+            strcpy(tok_imm.name, "0");
+            tok_reg_dst = (Token) {.type = REG, .name = "r00"};
+        }
+        else if (tok_reg_dst.type == IMM)
+        {
             tok_imm.type = tok_reg_dst.type;
             strncpy(tok_imm.name, tok_reg_dst.name, MAX_TOKEN_SIZE);
             tok_reg_dst = (Token) {.type = REG, .name = "r00"};
+        }
+        else if (tok_reg_dst.type == REG)
+        {
+            if ((tok_temp = Lexer_next(iter)).type == COMMA) {
+                tok_imm = Lexer_next(iter);
+
+                if (tok_imm.type == WORD) {
+                    append_ref(label_refs,label_refs_size,label_refs_indx,tok_imm.name,instr_num);
+                    tok_imm.type = IMM;
+                    strcpy(tok_imm.name, "0");
+                }
+                else if (tok_imm.type != IMM) {
+                    ERROR_INSTR("PARSER::TRANSLATE::Expected immediate or label, but got \"%s\", on line %d\n",tok_imm.name,line_num);
+                }
+            }
         } else {
-            if ((tok_temp = Lexer_next(iter)).type != COMMA) {
-                ERROR_INSTR("PARSER::TRANSLATE::Expected ',', but got \"%s\", on line %d\n",tok_temp.name,line_num);
-            }
-            tok_imm = Lexer_next(iter);
-            if (tok_imm.type != IMM && tok_imm.type != WORD) {
-                ERROR_INSTR("PARSER::TRANSLATE::Expected immediate or label, but got \"%s\", on line %d\n",tok_imm.name,line_num);
-            }
-            // Add reference to label in label_refs and set immediate to 0
-            if (tok_imm.type == WORD) {
-                if (*label_refs_indx == *label_refs_size-1) grow_array(label_refs, label_refs_size);
-                (*label_refs)[++(*label_refs_indx)] = (Label) {.value = instr_num+1};
-                strncpy((*label_refs)[*label_refs_indx].name, tok_imm.name, MAX_TOKEN_SIZE);
-                strcpy(tok_imm.name, "0"); tok_reg_dst.type = IMM;
-            }
+            ERROR_INSTR("PARSER::TRANSLATE::Expected register, immediate or label, but got \"%s\", on line %d\n",
+                    tok_reg_dst.name,line_num);
         }
         int reg_dst = parse_reg(tok_reg_dst.name);
         int imm = parse_imm(tok_imm.name);
@@ -205,7 +209,9 @@ static uint16_t parse_instr(Token* start_token, Lexer_Iterator* iter, int line_n
         instr |= (opcode & 0xf) << 12;
         instr |= (reg_dst & 0x7) << 9;
         instr |= imm & 0xff;
-    } else if (instr_type[opcode] == R_TYPE) {
+        break;
+        }
+    case R_TYPE: {
         Token tok_reg_dst;
         Token tok_reg_src1; 
         Token tok_reg_src2; 
@@ -216,10 +222,14 @@ static uint16_t parse_instr(Token* start_token, Lexer_Iterator* iter, int line_n
             ERROR_INSTR("PARSER::TRANSLATE::Expected ',', but got \"%s\", on line %d\n",tok_temp.name,line_num);
         if ((tok_reg_src1 = Lexer_next(iter)).type != REG)
             ERROR_INSTR("PARSER::TRANSLATE::Expected register, but got \"%s\", on line %d\n",tok_reg_src1.name,line_num);
-        if ((tok_temp = Lexer_next(iter)).type != COMMA)
-            ERROR_INSTR("PARSER::TRANSLATE::Expected ',', but got \"%s\", on line %d\n",tok_temp.name,line_num);
-        if ((tok_reg_src2 = Lexer_next(iter)).type != REG)
-            ERROR_INSTR("PARSER::TRANSLATE::Expected register, but got \"%s\", on line %d\n",tok_reg_src2.name,line_num);
+        // can accept only two registers, third set to zero
+        if (Lexer_peek(iter).type == COMMA) {
+            Lexer_next(iter);
+            if ((tok_reg_src2 = Lexer_next(iter)).type != REG)
+                ERROR_INSTR("PARSER::TRANSLATE::Expected register, but got \"%s\", on line %d\n",tok_reg_src2.name,line_num);
+        } else {
+            strcpy(tok_reg_src2.name, "r00");
+        }
         int reg_dst = parse_reg(tok_reg_dst.name);
         int reg_src1 = parse_reg(tok_reg_src1.name);
         int reg_src2 = parse_reg(tok_reg_src2.name);
@@ -233,6 +243,11 @@ static uint16_t parse_instr(Token* start_token, Lexer_Iterator* iter, int line_n
         instr |= (reg_dst & 0x7) << 9;
         instr |= (reg_src1 & 0x7) << 6;
         instr |= (reg_src2 & 0x7) << 3;
+        break;
+        }
+    default:
+        instr = 0;
+        break;
     }
     return instr;
 }
@@ -273,6 +288,16 @@ static int parse_imm(const char* imm_name) {
         return strtol(imm_name, NULL, 2);
     }
     return 0;
+}
+
+
+static void append_ref(Label** label_refs, int* label_refs_size, int* label_refs_indx, char* name, int instr_num) {
+    if (*label_refs_indx == *label_refs_size-1) 
+        grow_array(label_refs, label_refs_size);
+
+    (*label_refs)[++(*label_refs_indx)] = (Label) {.value = instr_num+1};
+
+    strncpy((*label_refs)[*label_refs_indx].name, name, MAX_TOKEN_SIZE);
 }
 
 
