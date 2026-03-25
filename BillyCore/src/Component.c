@@ -191,10 +191,10 @@ void StageDecode_update(StageDecode* decodeStage) {
     uint8_t sourceReg1 = getSource1Register(instrDecHigh,instrDecLow);
     uint8_t sourceReg2 = getSource2Register(instrDecHigh,instrDecLow);
 
-    bool E1 = destRegExecute == sourceReg1;
-    bool E2 = destRegExecute == sourceReg2;
-    bool M1 = destRegMemory == sourceReg1;
-    bool M2 = destRegMemory == sourceReg2;
+    bool E1 = destRegExecute == sourceReg1 && destRegExecute != 0;
+    bool E2 = destRegExecute == sourceReg2 && destRegExecute != 0;
+    bool M1 = destRegMemory == sourceReg1 && destRegMemory != 0;
+    bool M2 = destRegMemory == sourceReg2 && destRegMemory != 0;
 
     // flow dependence and no forwarding -> stall
     decodeStage->decodeDecode->stall = (getControlBitDecode(instrDec,1) && E1) || (getControlBitDecode(instrDec,2) && E2);
