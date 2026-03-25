@@ -43,7 +43,7 @@ static const char* instr_table[] = {
     "BEQ",
     "BLT",
     "JMP",
-    "NOP",
+    "ADDI",
 };
 
 static INSTR_TYPE instr_type[] = {
@@ -62,7 +62,7 @@ static INSTR_TYPE instr_type[] = {
     I_TYPE,
     I_TYPE,
     I_TYPE,
-    NOP,
+    M_TYPE,
 };
 
 

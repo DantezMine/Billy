@@ -6,7 +6,7 @@
 #include "utils/clock.h"
 #include "gui.h"
 #include "CPU.h"
-#include "Translation.h"
+#include "Parser.h"
 
 #define SCREEN_MODE sfDefaultStyle
 #define W_WIDTH 1600
@@ -25,18 +25,7 @@ int main() {
     gui_init(window);
     printf("Videomode size: %d, %d\n",videomode.width,videomode.height);
 
-
-
-    char* assembly = 
-        "   LDI %r1, 14\n"
-        "   LDI %r2, 14\n"
-        "   SUB %r2, %r2, %r1\n"
-        "   BEQ END\n"
-        "   LDI %r2, 26\n"
-        "   ADD %r2, %r2, %r1\n"
-        ".END:\n"
-        "";
-    ByteCode bc = Translation_translate_str(assembly);
+    ByteCode bc = Parser_translate_from_file("BillyCore/test/testFiles/mult.txt");
 
     CPU_Init();
     CPU_SetInstructionMemory((uint8_t*)bc.instr);

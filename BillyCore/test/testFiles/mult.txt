@@ -1,17 +1,37 @@
+#Entry point
+.START:                             # label does nothing here
+    LDI     %rsp, 255               # initialize stack
+    ADD     %rbp, %rsp, %r00        # initialize base frame
+
+    LDI     %rax, RET               # push return address
+    ADDI    %rsp, %rsp, 0xff
+    STR     %rax, %rsp, 0
+    LDI     %rdx, 5
+    LDI     %rex, 7
+    JMP     MUL_START
+.RET:
+    JMP     RET
+
+# args:
+# a = %rdx
+# b = %rex
+.MUL_START:
 # needs loop counter
-    XOR %rax, %rax, %rax
-    LDI %rax, 0x8
+    XOR     %rax, %rax, %rax        # accumulator
+    LDI     %rcx, 0x0               # loop counter
+    LDI     %rbx, 0x80              # mask for MSB
 .MUL_LOOP:
-    LSL %rax, %rax
-    LDI %rbx, 0x80              # mask for MSB
-    AND %rbx, %rbx, %rdx
-    XOR %rbx, %rbx, %r00
-    BEQ MUL_SKP
-    ADD %rax, %rax, %rcx
+    SUB     %r00, %rbx, %r00        # loop condition: rbx == 0
+    BEQ     MUL_RET
+    LSL     %rax, %rax
+    AND     %rbx, %rbx, %rex        # test bit
+    XOR     %r00, %rbx, %r00        # invert test result
+    BEQ     MUL_SKP
+    ADD     %rax, %rax, %rdx        # add if bit is set
 .MUL_SKP:
-    JMP MUL_LOOP
+    LSR     %rbx, %rbx
+    JMP     MUL_LOOP
 .MUL_RET:
-    LDA %rbx, %rsp, 0           # pop ret address
-    LDI %rcx, 1
-    ADD %rsp, %rsp, %rcx
-    JMP %rbx, 0
+    LDA     %rbx, %rsp, 0           # pop ret address
+    ADDI    %rsp, %rsp, 1
+    JMP     %rbx, 0

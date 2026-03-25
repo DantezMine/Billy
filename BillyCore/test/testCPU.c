@@ -565,6 +565,7 @@ vango_test(translate_medium) {
 vango_test(Parser_multiply) {
     ByteCode bc = Parser_translate_from_file("test/testFiles/mult.txt");
     vg_assert_ne(bc.num_instr, -1);
+    Parser_free(&bc);
 };
 
 

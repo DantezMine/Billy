@@ -26,31 +26,31 @@ Billy uses a Harvard Architecture, where Instruction memory is seperate from Dat
 - Decode-units seperated between stages or five central decoding units in shift registers.
 ## ISA
 
-| INSTR | Type | OPCD   | EXPRESSION                                  | Description                           |
-| ----- | ---- | ------ | ------------------------------------------- | ------------------------------------- |
-| LDA   | M    | 0b0001 | rd=Mem\[\%r1+I\]                            | Load value at \%r1 + I into rd        |
-| STR   | M    | 0b0010 | Mem\[\%r1+I\]=\\%rd                         | Store \%rd into \%r1+I                |
-| LDI   | I    | 0b0011 | rd=I                                        | Load I into rd                        |
-| ADD   | R    | 0b0100 | rd=\\%r1+\\%r2                              | Add \%r1 and \%r2 into rd             |
-| SUB   | R    | 0b0101 | rd=\%r1-\\%r2                               | Subtract \%r2 from \%r1 into rd       |
-| AND   | R    | 0b0110 | rd=\%r1&\\%r2                               | Bitwise AND \%r1 and \%r2 into rd     |
-| OR    | R    | 0b0111 | rd=\%r1\|\\%r2                              | Bitwise OR \%r1 and \%r2 into rd      |
-| XOR   | R    | 0b1000 | rd=\%r1^\\%r2                               | Bitwise XOR \%r1 and \%r2 into rd     |
-| LSL   | R    | 0b1001 | rd=\%r1<<1                                  | Logical shift left \%r1 into rd       |
-| LSR   | R    | 0b1010 | rd=\%r1>>1                                  | Logical shift right \%r1 into rd      |
-| ASR   | R    | 0b1011 | rd=\%r1>>1                                  | Arithmetic shift right \%r1 into rd   |
-| BEQ   | I    | 0b1100 | PC = F\_Zero  ? \%rd+I : PC+4               | Branch to \%rd+I if zero flag set     |
-| BLT   | I    | 0b1101 | PC = F\_Neg   ? \%rd+I : PC+4               | Branch to \%rd+I if negative flag set |
-| JMP   | I    | 0b1110 | PC = \%rd+I                                 | Branch to \%rd+I                      |
-|       |      | 0b1111 |                                             |                                       |
+| INSTR | Type | OPCD   | EXPRESSION                    | Description                           |
+| ----- | ---- | ------ | ----------------------------- | ------------------------------------- |
+| LDA   | M    | 0b0001 | rd =Mem\[\%r1+I\]             | Load value at \%r1 + I into rd        |
+| STR   | M    | 0b0010 | Mem\[\%r1+I\]=\\%rd           | Store \%rd into \%r1+I                |
+| LDI   | I    | 0b0011 | rd = I                        | Load I into rd                        |
+| ADD   | R    | 0b0100 | rd = \\%r1+\\%r2              | Add \%r1 and \%r2 into rd             |
+| SUB   | R    | 0b0101 | rd = \%r1-\\%r2               | Subtract \%r2 from \%r1 into rd       |
+| AND   | R    | 0b0110 | rd = \%r1&\\%r2               | Bitwise AND \%r1 and \%r2 into rd     |
+| OR    | R    | 0b0111 | rd = \%r1\|\\%r2              | Bitwise OR \%r1 and \%r2 into rd      |
+| XOR   | R    | 0b1000 | rd = \%r1^\\%r2               | Bitwise XOR \%r1 and \%r2 into rd     |
+| LSL   | R    | 0b1001 | rd = \%r1<<1                  | Logical shift left \%r1 into rd       |
+| LSR   | R    | 0b1010 | rd = \%r1>>1                  | Logical shift right \%r1 into rd      |
+| ASR   | R    | 0b1011 | rd = \%r1>>1                  | Arithmetic shift right \%r1 into rd   |
+| BEQ   | I    | 0b1100 | PC = F\_Zero  ? \%rd+I : PC+4 | Branch to \%rd+I if zero flag set     |
+| BLT   | I    | 0b1101 | PC = F\_Neg   ? \%rd+I : PC+4 | Branch to \%rd+I if negative flag set |
+| JMP   | I    | 0b1110 | PC = \%rd+I                   | Branch to \%rd+I                      |
+| ADDI  | M    | 0b1111 | rd = %r1 + I                  | Add I and %rd into rd                 |
 
 ### M-type
 Flow dependence may occur for `STR` instructions, because the decode stage sees the destination register (which holds the value to be stored) despite no data being written to that data.
 _Note:_ Swapped source and destination register.
 
-| 15-12 | 11-9            | 8-6             | 5-0 |
-| ----- | --------------- | --------------- | --- |
-| op    | r\_dest | r\_src1 | I   |
+| 15-12 | 11-9    | 8-6  | 5-0 |
+| ----- | ------- | ---- | --- |
+| op    | r\_dest | r\_1 | I   |
 ### R-type
 _Note:_ Swapped source and destination register. As labeled below is the correct version.
 

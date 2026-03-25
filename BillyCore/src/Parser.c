@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include "CPU.h"
 #include "Component.h"
 #include "Lexer.h"
 #include <math.h>
@@ -11,7 +12,7 @@
 #define ERROR_TRANS(...) { printf(__VA_ARGS__); bc_out.instr_size = -1; free(bc_out.instr); free(labels); free(label_refs); return bc_out; }
 
 
-static void* grow_array(void* arr, int* size);
+static void* grow_array(void* arr, int* size, size_t elem_size);
 static char* src_to_str(char* path);
 static uint16_t swap_endian(uint16_t in);
 static void append_ref(Label** label_refs, int* label_refs_size, int* label_refs_indx, char* name, int instr_num);
@@ -52,6 +53,9 @@ ByteCode Parser_translate(char* src) {
 
     Token start_token;
     while ((start_token = Lexer_next(&iter)).type != END) {
+        for (int i=0; i<bc_out.instr_size; i++) {
+            // printf("%d: %d\n",i,bc_out.instr[i].instr);
+        }
         switch(start_token.type) {
             case WORD:
             {
@@ -59,8 +63,9 @@ ByteCode Parser_translate(char* src) {
                         &label_refs, &label_refs_size, &label_refs_indx);
                 if (instr == 0)
                     ERROR_TRANS("PARSER::TRANSLATE::Bad instruction at line %d\n", line_num);
-                if (bc_out.num_instr == bc_out.instr_size-1) 
-                    bc_out.instr = grow_array(bc_out.instr, &bc_out.instr_size);
+                if (bc_out.num_instr == bc_out.instr_size-1) {
+                    bc_out.instr = grow_array(bc_out.instr, &bc_out.instr_size, sizeof(Instruction));
+                }
                 bc_out.instr[++bc_out.num_instr].instr = swap_endian(instr);
                 break;
             }
@@ -81,7 +86,7 @@ ByteCode Parser_translate(char* src) {
                     }
 
                     if (label_indx == labels_size-1)
-                        labels = grow_array(labels, &labels_size);
+                        labels = grow_array(labels, &labels_size,sizeof(Label));
 
                     labels[++label_indx] = (Label) {.value = bc_out.num_instr+1};
                     strncpy(labels[label_indx].name, tok_label.name, MAX_TOKEN_SIZE);
@@ -252,9 +257,10 @@ static uint16_t parse_instr(Token* start_token, Lexer_Iterator* iter, int line_n
     return instr;
 }
 
-static void* grow_array(void* arr, int* size) {
+static void* grow_array(void* arr, int* size, size_t elem_size) {
     *size *= 2;
-    return realloc(arr, *size);
+    void* new_arr = realloc(arr, *size*elem_size);
+    return new_arr;
 }
 
 static int parse_reg(const char* reg_name) {
@@ -292,8 +298,9 @@ static int parse_imm(const char* imm_name) {
 
 
 static void append_ref(Label** label_refs, int* label_refs_size, int* label_refs_indx, char* name, int instr_num) {
-    if (*label_refs_indx == *label_refs_size-1) 
-        grow_array(label_refs, label_refs_size);
+    if (*label_refs_indx == (*label_refs_size)-1) {
+        *label_refs = grow_array(*label_refs, label_refs_size, sizeof(Label));
+    }
 
     (*label_refs)[++(*label_refs_indx)] = (Label) {.value = instr_num+1};
 
