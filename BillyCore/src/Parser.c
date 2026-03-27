@@ -1,12 +1,11 @@
-#include "Parser.h"
-#include "CPU.h"
-#include "Component.h"
-#include "Lexer.h"
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+
+#include "Parser.h"
+#include "Component.h"
+#include "Lexer.h"
 
 #define ERROR_INSTR(...) { printf(__VA_ARGS__); return 0; }
 #define ERROR_TRANS(...) { printf(__VA_ARGS__); bc_out.instr_size = -1; free(bc_out.instr); free(labels); free(label_refs); return bc_out; }
@@ -305,6 +304,32 @@ static void append_ref(Label** label_refs, int* label_refs_size, int* label_refs
     (*label_refs)[++(*label_refs_indx)] = (Label) {.value = instr_num+1};
 
     strncpy((*label_refs)[*label_refs_indx].name, name, MAX_TOKEN_SIZE);
+}
+
+void Parser_instr_to_str(uint16_t instr, char* out, int width) {
+    uint16_t op = (instr>>12) & 0xf;
+    const char* mnemonic = instr_table[op];
+    const char* regDest = register_labels[(instr>>9)&0x7];
+    const char* reg1 = register_labels[(instr>>6)&0x7];
+    const char* reg2 = register_labels[(instr>>3)&0x7];
+    uint16_t immM = instr & 0x3f;
+    uint16_t immI = instr & 0xff;
+    switch (instr_type[op]) {
+    case NOP:
+        sprintf_s(out, width, "NOP");
+        break;
+    case R_TYPE:
+        sprintf_s(out, width, "%s %%%s, %%%s, %%%s",mnemonic,regDest,reg1,reg2);
+        break;
+    case M_TYPE:
+        sprintf_s(out, width, "%s %%%s, %%%s, 0x%x",mnemonic,regDest,reg1,immM);
+        break;
+    case I_TYPE:
+        sprintf_s(out, width, "%s %%%s, 0x%x",mnemonic,regDest,immI);
+        break;
+    default:
+        printf("Translation::instr_to_str Unexpected instruction!\n");
+    }
 }
 
 

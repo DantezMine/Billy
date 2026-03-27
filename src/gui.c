@@ -1,11 +1,13 @@
 #include "gui.h"
+#include "Parser.h"
 #include "CPU.h"
-#include "Translation.h"
 #include "utils/vec2.h"
 #include <malloc.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static sfView* guiview;
 
@@ -101,6 +103,7 @@ void gui_close() {
 static void update_elements() {
     RegisterFile* regs = CPU_getRegisterFile();
     const char* reg_string = 
+                    "r00 : 0x%2x  / %3u  / %4d\n"
                     "rax : 0x%2x  / %3u  / %4d\n"
                     "rbx : 0x%2x  / %3u  / %4d\n"
                     "rcx : 0x%2x  / %3u  / %4d\n"
@@ -115,12 +118,13 @@ static void update_elements() {
     for (int i=0; i<18; i++) {
         switch (elements[i].content_type) {
             case GUI_INSTR:
-                Translation_instr_to_str(
+                Parser_instr_to_str(
                         instr_history[elements[i].stage][elements[i].level],
                         elements[i].text, 100);
                 break;
             case GUI_REGISTERS:
                 sprintf_s(elements[i].text,500, reg_string,
+                        regs->reg[0].data,regs->reg[0].data,regs->reg[0].data,
                         regs->reg[1].data,regs->reg[1].data,regs->reg[1].data,
                         regs->reg[2].data,regs->reg[2].data,regs->reg[2].data,
                         regs->reg[3].data,regs->reg[3].data,regs->reg[3].data,
@@ -136,7 +140,7 @@ static void update_elements() {
                 int pc = CPU_getPC()->data;
                 mem_offset = memory_offset_instr(pc);
                 for (int k=0; k<18; k++) {
-                    Translation_instr_to_str(CPU_PeekInstructionMemory16(mem_offset+k*2), instr_disas, 50);
+                    Parser_instr_to_str(CPU_PeekInstructionMemory16(mem_offset+k*2), instr_disas, 50);
                     if (pc == mem_offset+k*2) {
                         sprintf_s(instr_line,50,"pc -> 0x%2x : %2x %2x  # %s\n",
                                 mem_offset+k*2,
@@ -480,7 +484,7 @@ static void setup_elements() {
         .children = {16},
         .relation = REL_FREE,
         .rel_pos = (sfVector2f) {46, 394},
-        .size = (sfVector2f) {370, 229},
+        .size = (sfVector2f) {370, 240},
         .text = calloc(500,1),
     };
     elements[16] = (GUI_Container) {

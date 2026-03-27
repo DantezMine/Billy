@@ -43,6 +43,8 @@ void CPU_Init() {
     decodeWriteback->instruction_High.data = 0;
     decodeWriteback->instruction_Low.data = 0;
     regFileA->reg[0].data = 0;
+    regFileB->reg[0].data = 0;
+    regFileWrite->reg[0].data = 0;
 
     PC->data = PC_START;
     bool* branchPC = malloc(sizeof(bool));

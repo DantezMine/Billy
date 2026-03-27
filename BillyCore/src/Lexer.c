@@ -1,5 +1,5 @@
 #include "Lexer.h"
-#include "pcre2posix.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>

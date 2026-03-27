@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
+
 #include "SFML/Graphics.h"
 #include "utils/events.h"
 #include "utils/clock.h"
@@ -13,7 +15,7 @@
 #define W_HEIGHT 900
 
 
-int main() {
+int main(int argc, char** argv) {
 
     sfVideoMode videomode = sfVideoMode_getDesktopMode();
     sfRenderWindow* window = sfRenderWindow_create(videomode, "BillyApp", SCREEN_MODE, NULL);
@@ -23,13 +25,19 @@ int main() {
 
 
     gui_init(window);
-    printf("Videomode size: %d, %d\n",videomode.width,videomode.height);
+    // printf("Videomode size: %d, %d\n",videomode.width,videomode.height);
 
-    ByteCode bc = Parser_translate_from_file("BillyCore/test/testFiles/mult.txt");
+    char* filepath = malloc(200);
+    strcpy(filepath, "BillyCore/test/testFiles/mult.txt");
+
+    if (argc == 2) {
+        strcpy(filepath, argv[1]);
+    }
+
+    ByteCode bc = Parser_translate_from_file(filepath);
 
     CPU_Init();
     CPU_SetInstructionMemory((uint8_t*)bc.instr);
-    gui_clock();
 
     while (sfRenderWindow_isOpen(window)) {
         Clock_setFrame();

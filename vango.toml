@@ -2,8 +2,9 @@
 name = "BillyApp"
 version = "0.1.0"
 lang = "C11"
-compiler-options = []
+compiler-options = ["--no-warnings"]
 
 [dependencies]
 CSFML   = { path="libs/CSFML" }
 Core    = { path="BillyCore" }
+PCRE    = { path="BillyCore/libs/PCRE2" }

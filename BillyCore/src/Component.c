@@ -203,6 +203,7 @@ void StageDecode_update(StageDecode* decodeStage) {
     decodeStage->regA->write = true;
     decodeStage->regB->write = true;
 
+
     // write to register A if no dependence nor forwarding
     if (getControlBitDecode(instrDec,1) & !E1 & !M1) {
         decodeStage->regA->in = decodeStage->regFileA->reg[sourceReg1].data;
@@ -342,6 +343,7 @@ void StageMemory_update(StageMemory* memoryStage) {
         memoryStage->regB->write = true;
     }
 
+    
     memoryStage->regOut->in = out;
     memoryStage->regOut->write = true;
 

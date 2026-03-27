@@ -1,11 +1,9 @@
 #ifndef H_LEXER
 #define H_LEXER
 
-#include <stddef.h>
 #include "pcre2posix.h"
 
 #define MAX_TOKEN_SIZE 32
-
 
 typedef enum Token_Type {
     WORD,
